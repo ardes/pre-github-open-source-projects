@@ -9,9 +9,11 @@ module Test
       module Stack
         
         def setup
-          setup_objects
-          @items = (0..3).collect {@new_item_proc.call}
-          @ids = @items.collect {|item| @stack.push_item(item)}
+          setup_objects          
+          (0..3).each {@stack.push_item(@new_item_proc.call)}
+          @items = Array.new
+          @ids = Array.new
+          @stack.each_item {|id,item| @ids << id; @items << item}
         end
         
         def all_items_with_id
@@ -36,7 +38,9 @@ module Test
           
           # undo last two items, so [0 not undone, 1 not undone, 2 undone, 3 undone ]
           @items[3].undo
+          @stack.update_item @ids[3], @items[3]
           @items[2].undo
+          @stack.update_item @ids[2], @items[2]
           
           # Test all items returned in asc order
           assert_equal @stack.items, all_items_with_id
@@ -58,14 +62,16 @@ module Test
           
           # undo the rest of the items
           @items[1].undo
+          @stack.update_item @ids[1], @items[1]
           @items[0].undo
+          @stack.update_item @ids[0], @items[0]
           
           # test :all
           assert_equal [],                @stack.items(:not_undone)
           assert_equal all_items_with_id, @stack.items(:undone)
           
           # redo the entire stack
-          (0..3).each {|i| @items[i].redo }
+          (0..3).each {|i| @items[i].redo; @stack.update_item @ids[i], @items[i] }
           
           # test :all
           assert_equal all_items_with_id.reverse, @stack.items(:not_undone)
@@ -74,7 +80,9 @@ module Test
         
         def test_delete_undone_items
           @items[3].undo
+          @stack.update_item @ids[3], @items[3]
           @items[2].undo
+          @stack.update_item @ids[2], @items[2]
           @stack.delete_undone_items
           assert_equal [ [@ids[0], @items[0]], [@ids[1], @items[1]] ], @stack.items
         end
@@ -82,8 +90,9 @@ module Test
         def test_update_item
           new_item = @new_item_proc.call
           new_item.undo
+          assert_equal @ids[3], @stack.items(:not_undone, :first)[0][0]
           @stack.update_item @ids[3], new_item
-          assert_equal [ [@ids[3], new_item] ], @stack.items(:undone, :first)
+          assert_equal @ids[3], @stack.items(:undone, :first)[0][0]
         end
         
         def test_push_item

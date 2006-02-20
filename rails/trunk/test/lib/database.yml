@@ -1,0 +1,6 @@
+test:
+  adapter: mysql
+  database: ardes_test
+  username: root
+  password: iamjlb8
+  socket: /opt/local/var/run/mysqld/mysqld.sock

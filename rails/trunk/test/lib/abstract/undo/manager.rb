@@ -9,24 +9,27 @@ module Test
       module Manager
         def setup
           setup_objects
-          @items = (0..2).collect {@new_item_proc.call}
-          @ids = @items.collect {|item| @manager.push(item)}
+          @stack = @manager.stack
+          (0..2).each {@stack.push_item(@new_item_proc.call)}
+          @ids = Array.new
+          @items = Array.new
+          @stack.each_item {|id,item| @ids << id; @items << item}
         end
         
         def test_manager
           @manager.undo :all
-          assert_equal [true, true, true], [@items[0].undone?, @items[1].undone?, @items[2].undone?]
+          assert_equal [true, true, true], @stack.items.collect {|id,item| item.undone?}
           assert_equal [], @manager.undo(:first)
           
           assert_equal [ [@ids[0], @items[0]] ], @manager.redo
-          assert_equal [false, true, true], [@items[0].undone?, @items[1].undone?, @items[2].undone?]
+          assert_equal [false, true, true], @stack.items.collect {|id,item| item.undone?}
           
           @manager.redo :all
-          assert_equal [false, false, false], [@items[0].undone?, @items[1].undone?, @items[2].undone?]
+          assert_equal [false, false, false], @stack.items.collect {|id,item| item.undone?}
           
           assert_equal [ [@ids[2], @items[2]], [@ids[1], @items[1]] ], @manager.undo(@ids[1])
           
-          assert_equal [false, true, true], [@items[0].undone?, @items[1].undone?, @items[2].undone?]
+          assert_equal [false, true, true], @stack.items.collect {|id,item| item.undone?}
           
           @manager.redo
           

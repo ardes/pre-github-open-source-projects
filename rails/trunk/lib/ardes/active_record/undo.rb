@@ -34,12 +34,14 @@ module Ardes# :nodoc:
         end
 
         def update_item(pkId, item)
-          item.save!
+          to_update = find(pkId)
+          to_update.attributes = item.attributes
+          to_update.save!
         end
 
         def each_item(reverse = false, &block)
           item_list = items
-          item_list.reverse if reverse
+          item_list.reverse! if reverse
           item_list.each(&block)
         end
 
