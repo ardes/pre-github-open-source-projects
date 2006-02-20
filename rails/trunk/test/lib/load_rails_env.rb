@@ -1,0 +1,1 @@
+require "railties/lib/initializer"

@@ -1,0 +1,21 @@
+require 'rake/testtask'
+require 'rake/rdoctask'
+
+# Run the tests
+
+task :default => :test
+
+Rake::TestTask.new { |t|
+  t.libs << 'lib' << 'test/lib' << '../rails/activerecord/lib'
+  t.pattern = 'test/*_test.rb'
+  t.verbose = true
+  t.warning = false
+}
+
+# Genereate the RDoc documentation
+
+Rake::RDocTask.new { |rdoc|
+  rdoc.rdoc_dir = 'doc'
+  rdoc.title    = "Ardes Ruby on Rails additions"
+  rdoc.options << '--line-numbers --inline-source --all'
+}
