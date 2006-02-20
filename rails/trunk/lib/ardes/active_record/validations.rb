@@ -2,8 +2,8 @@ module Ardes
   module ActiveRecord
     module Validations
     
-      def self.included(mod)
-        mod.extend(ClassMethods)
+      def self.included(base)
+        base.extend(ClassMethods)
       end
     
       module ClassMethods

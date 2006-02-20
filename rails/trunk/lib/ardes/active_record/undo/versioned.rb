@@ -21,9 +21,10 @@ module Ardes
             self.connection.create_table(table_name, create_table_options) do |t|
               t.column :undone, :boolean, :default => false, :null => false
               t.column :obj_class_name, :string, :null => false
-              t.column :obj_id, :int, :null => false
-              t.column :down_version, :int, :null => true
-              t.column :up_version, :int, :null => true
+              t.column :obj_id, :integer, :null => false
+              t.column :down_version, :integer, :null => true
+              t.column :up_version, :integer, :null => true
+              t.column :obj_description, :string, :null => true
             end
           end
 
@@ -33,11 +34,7 @@ module Ardes
           end
         end
         
-        module InstanceMethods
-          def description
-            "#{obj_class_name}: #{obj_id} #{down_version.nil? ? 'created' : (up_verion.nil? ? 'destroyed' : 'modified')}"
-          end
-        
+        module InstanceMethods        
          protected
          
           def on_undo
@@ -109,7 +106,9 @@ module Ardes
             end
           end
           
-         def before_save(r)
+          alias_method :undoable, :execute
+          
+          def before_save(r)
             return unless @capturing
             @down[r.object_id] = r.version
           end
@@ -151,11 +150,15 @@ module Ardes
 
           def capture_item(r, up_version)
             unless @down[r.object_id] == up_version
+              if (desc = r.to_s) =~ /^\#\<.*\>$/  #don't use to_s if it's the default Object.to_s
+                desc = "#{r.class.name.downcase}: #{r.attributes[r.class.primary_key]}"
+              end
               @items << @stack.new(
-                :obj_class_name => r.class.name,
-                :obj_id         => r.attributes[r.class.primary_key],
-                :down_version   => @down[r.object_id],
-                :up_version     => up_version)
+                :obj_class_name   => r.class.name,
+                :obj_id           => r.attributes[r.class.primary_key],
+                :down_version     => @down[r.object_id],
+                :up_version       => up_version,
+                :obj_description  => desc)
             end
             @down.delete r.object_id
             true

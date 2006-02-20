@@ -6,7 +6,7 @@ require 'rake/rdoctask'
 task :default => :test
 
 Rake::TestTask.new { |t|
-  t.libs << 'lib' << 'test/lib' << '../rails/activerecord/lib'
+  t.libs << 'lib' << 'test/lib' << '../rails/activerecord/lib' << '../plugins/acts_as_versioned/lib'
   t.pattern = 'test/*_test.rb'
   t.verbose = true
 }
