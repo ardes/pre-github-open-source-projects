@@ -1,0 +1,1 @@
+require "#{RAILS_ROOT}/vendor/ardes/lib/ardes.rb"
