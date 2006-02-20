@@ -6,10 +6,9 @@ require 'rake/rdoctask'
 task :default => :test
 
 Rake::TestTask.new { |t|
-  t.libs << 'lib' << 'test/lib' << '../rails/activerecord/lib'
+  t.libs << 'lib' << 'test/lib'
   t.pattern = 'test/*_test.rb'
   t.verbose = true
-  t.warning = false
 }
 
 # Genereate the RDoc documentation
