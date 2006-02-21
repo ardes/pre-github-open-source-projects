@@ -41,5 +41,28 @@ module ArdesTests
         @new_item_proc = Proc.new { UndoVersionedItem.new }
       end
     end
+    
+    class MigrationTest < Test::Unit::TestCase
+      
+      def setup
+        ActiveRecord::Base.connection.initialize_schema_information
+        ActiveRecord::Base.connection.update "UPDATE schema_info SET version = 0"
+        ActiveRecord::Base.connection.drop_table "thing_undo_items" rescue nil
+      end
+      
+      alias_method :teardown, :setup
+
+      def test_versioned_migration
+        m = Ardes::ActiveRecord::Undo::Versioned::Manager.for :things
+        assert_raises(ActiveRecord::StatementInvalid) { m.stack.count }
+        # take 'er up
+        ActiveRecord::Migrator.up(File.dirname(__FILE__) + '/fixtures/migrations/')
+        m.stack.create
+        assert_equal 1, m.stack.count
+        # now lets take 'er back down
+        ActiveRecord::Migrator.down(File.dirname(__FILE__) + '/fixtures/migrations/')
+        assert_raises(ActiveRecord::StatementInvalid) { m.stack.count }
+      end
+    end
   end
 end
