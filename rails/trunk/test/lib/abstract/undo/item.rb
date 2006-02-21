@@ -1,4 +1,4 @@
-module Test
+module ArdesTests
   module Abstract
     module Undo
       #
