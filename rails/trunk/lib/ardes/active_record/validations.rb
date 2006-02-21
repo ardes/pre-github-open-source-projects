@@ -1,5 +1,5 @@
-module Ardes
-  module ActiveRecord
+module Ardes# :nodoc:
+  module ActiveRecord# :nodoc:
     module Validations
     
       def self.included(base)

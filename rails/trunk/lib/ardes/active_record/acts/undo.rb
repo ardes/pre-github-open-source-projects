@@ -1,12 +1,56 @@
 require 'ardes/active_record/undo/versioned'
 
-module Ardes
-  module ActiveRecord
-    module Acts
+module Ardes# :nodoc:
+  module ActiveRecord# :nodoc:
+    module Acts# :nodoc:
       #
-      # m.undoable do
-      #   Window.create()...
-      # end
+      # Specify this act to enable unodable operations on your ActiveRecord models
+      #
+      # ===Example of use
+      #
+      #   class MyProduct < ActiveRecord::Base
+      #     acts_as_undoable :products
+      #     has_many :my_parts, :dependent => true
+      #   end
+      # 
+      #   class MyPart < ActiveRecord::Base
+      #     acts_as_undoable :products
+      #     belongs_to: my_product
+      #   end
+      #
+      #   @manager = MyProduct.undo_manager
+      #   c = nil
+      #
+      #   # start with a new chandelier
+      #   chandelier_created_with_gold_leaf = @manager.execute do
+      #     c = MyProduct.create(:name => 'chandelier')
+      #     c.my_parts << (MyPart.new(:name => 'gold leaf'))
+      #     c.save
+      #   end
+      #   
+      #   # add some glass beads
+      #   glass_beads_added = @manager.execute do
+      #     c.my_parts << (MyPart.new(:name => 'glass bead'))
+      #     c.my_parts << (MyPart.new(:name => 'glass bead'))
+      #     c.save
+      #   end
+      #   
+      #   # now junk the chandelier (and the dependent parts)
+      #   chandelier_destroyed = @manager.execute do
+      #     FineProduct.find(c.id).destroy
+      #   end
+      #   
+      #   # We now have nothing, but along the way a chandelier with 1 part was created
+      #   # and then two new parts were added to that
+      #
+      #   # NOW, lets undo some of that
+      #   
+      #   @manager.undo glass_beads_added # will undo the destroy, and the glass_beads
+      #   
+      #   @manager.redo glass_beads_added # add the beads again
+      #   
+      #   # getting rid of chandelier will undo all ops to that point, which means no hanging foriegn keys
+      #   @manager.undo chandelier_created_with_gold_leaf  
       #
       module Undo
 

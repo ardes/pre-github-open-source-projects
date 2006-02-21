@@ -1,8 +1,8 @@
 require 'ardes/active_record/undo'
 
-module Ardes
-  module ActiveRecord
-    module Undo
+module Ardes# :nodoc:
+  module ActiveRecord# :nodoc:
+    module Undo# :nodoc:
       module Versioned
         def self.included(base) # :nodoc:
             base.extend ClassMethods
@@ -17,7 +17,7 @@ module Ardes
         end
         
         module SingletonMethods
-          def create_item(record, down_version, up_version)
+          def new_item(record, down_version, up_version)
             self.new(
               :obj_class_name   => record.class.name,
               :obj_id           => record.attributes[record.class.primary_key],
@@ -125,13 +125,13 @@ module Ardes
 
           def after_save(r)
             return unless @capturing
-            @items << @stack.create_item(r, @down[r.object_id], r.version)
+            @items << @stack.new_item(r, @down[r.object_id], r.version)
             @down.delete r.object_id
           end
 
           def after_destroy(r)
             return unless @capturing
-            @items << @stack.create_item(r, @down[r.object_id], nil)
+            @items << @stack.new_item(r, @down[r.object_id], nil)
             @down.delete r.object_id
            end
           

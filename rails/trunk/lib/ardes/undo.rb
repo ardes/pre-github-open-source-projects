@@ -23,59 +23,63 @@ module Ardes #:nodoc:
   # also adds a 'description' to undoables.
   #
   # ===Example of use:
-  #  class MyUndoItem
-  #    include Ardes::Undo::AbstractItem
+  #   class MyUndoItem
+  #     include Ardes::Undo::AbstractItem
   #
-  #    def initialize(name); @name = name; end
-  #    def inspect; "Item: #{@name}"; end
+  #     def initialize(name); @name = name; end
+  #     def inspect; "Item: #{@name}"; end
   #
-  #  protected
-  #    def on_undo; p "#{@name} undone"; true; end
-  #    def on_redo; p "#{@name} redone"; true; end
-  #  end
+  #   protected
+  #     def on_undo; p "#{@name} undone"; true; end
+  #     def on_redo; p "#{@name} redone"; true; end
+  #   end
   #
-  #  class MyUndoStack
-  #    include Ardes::Undo::AbstractStack
+  #   class MyUndoStack
+  #     include Ardes::Undo::AbstractStack
   #
-  #    def initialize; @storage = Hash.new; @idx = 0; end
-  #    def delete_undone_items; @storage.delete_if{|k,i| i.undone?}; end
-  #    def push_item(item); @storage[@idx += 1] = item; @idx; end
-  #    def update_item(id, item); @storage[id] = item; end
+  #     def initialize; @storage = Hash.new; @idx = 0; end
+  #     def delete_undone_items; @storage.delete_if{|k,i| i.undone?}; end
+  #     def push_item(item); @storage[@idx += 1] = item; @idx; end
+  #    
+  #     def item_at(id)
+  #       @storage[id]
+  #       yield(@storage[id]) if block_given?
+  #     end
   #
-  #    def each_id_item(reverse = false)
-  #      list = @storage.sort
-  #      list.reverse! if reverse
-  #      list.each { |id, item| yield id, item}
-  #    end
-  #  end
+  #     def each_id_item(reverse = false)
+  #       list = @storage.sort
+  #       list.reverse! if reverse
+  #       list.each { |id, item| yield id, item}
+  #     end
+  #   end
   #
-  #  m = Ardes::Undo::Manager.new MyUndoStack.new
+  #   m = Ardes::Undo::Manager.new MyUndoStack.new
   #  
-  #  m.push MyUndoItem.new("first")   => 1
-  #  m.push MyUndoItem.new("second")  => 2
+  #   m.push MyUndoItem.new("first")   => 1
+  #   m.push MyUndoItem.new("second")  => 2
   #   
-  #  m.undoables      => [[2, Item: second], [1, Item: first]]
+  #   m.undoables      => [2, 1]
   #  
-  #  m.undo           => [[2, Item: second]]
-  #  "second undone"
+  #   m.undo           => [2]
+  #   "second undone"
   #  
-  #  m.undo           
-  #  "first undone"   => [[1, Item: first]]
+  #   m.undo           
+  #   "first undone"   => [1]
   #  
-  #  m.undoables      => []
+  #   m.undoables      => []
   #
-  #  m.redoables      => [[1, Item: first], [2, Item: second]]
+  #   m.redoables      => [1, 2]
   #
-  #  m.redo :all      
-  #  "first redone"
-  #  "second redone"  => [[1, Item: first], [2, Item: second]]
+  #   m.redo :all      
+  #   "first redone"
+  #   "second redone"  => [1, 2]
   #
-  #  m.undo :first
-  #  "second undone"  => [[2, Item: second]]
+  #   m.undo :first
+  #   "second undone"  => [2]
   #
-  #  m.push MyUndoItem.new("third")   => 3
+  #   m.push MyUndoItem.new("third")   => 3
   #
-  #  m.undoables      => [[3, Item: third], [1, Item: first]]
+  #   m.undoables      => [3,1]
   #
   # Notice that the undone item (item 2) was removed from the stack when a new item was pushed.
   module Undo
