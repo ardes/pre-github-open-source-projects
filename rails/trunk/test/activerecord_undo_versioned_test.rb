@@ -40,34 +40,4 @@ module ActiveRecordUndoVersionedTest
       @new_item_proc = Proc.new { UndoVersionedItem.new }
     end
   end
-  
-  class VersionedManagerTest < Test::Unit::TestCase
-    
-    class Product < ActiveRecord::Base
-      acts_as_versioned
-    end
-    
-    def setup
-      @manager = Ardes::ActiveRecord::Undo::Versioned::Manager.for :products
-    end
-    
-    def test_manager_linked
-      assert_kind_of Ardes::ActiveRecord::Undo::Versioned::Manager, @manager
-      assert_equal ProductUndoItem, @manager.stack
-    end
-    
-    def test_create_undo_redo
-      product_count = Product.count
-      @manager.execute do
-        Product.create(:name => 'product')
-        Product.create(:name => 'product')
-        Product.create(:name => 'product')
-      end
-      assert_equal product_count + 3, Product.count
-      @manager.undo
-      assert_equal product_count + 2, Product.count
-      @manager.redo
-      assert_equal product_count + 3, Product.count
-    end
-  end
 end

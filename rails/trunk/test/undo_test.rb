@@ -21,12 +21,16 @@ module UndoTest
     def initialize; @storage = Hash.new; @idx = 0; end
     def delete_undone_items; @storage.delete_if{|k,i| i.undone?}; end
     def push_item(item); @storage[@idx += 1] = item; @idx; end
-    def update_item(id, item); @storage[id] = item; end
-
-    def each_item(reverse = false)
-      list = @storage.sort
-      list.reverse! if reverse
-      list.each { |id, item| yield id, item}
+    
+    def item_at(id)
+      item = @storage[id]
+      yield(item) if block_given?
+    end
+    
+    def each_id_item(reverse = false)
+      items = @storage.sort
+      items.reverse! if reverse
+      items.each { |id,item| yield(id, item)}
     end
   end
 

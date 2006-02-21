@@ -42,7 +42,7 @@ module Ardes #:nodoc:
   #    def push_item(item); @storage[@idx += 1] = item; @idx; end
   #    def update_item(id, item); @storage[id] = item; end
   #
-  #    def each_item(reverse = false)
+  #    def each_id_item(reverse = false)
   #      list = @storage.sort
   #      list.reverse! if reverse
   #      list.each { |id, item| yield id, item}
@@ -123,14 +123,15 @@ module Ardes #:nodoc:
       # Delete all undone commands.
       def delete_undone_items; raise 'Must implement delete_undone_items'; end
       
-      # Update the item with the specified stack id.
-      def update_item(id, item); raise 'Must implement update_item'; end
-        
+      # return the item with stack_id
+      # optionally takes a block, if so, the block is yielded with the item and item saved
+      def item_at(id); raise 'Must implement item_at'; end;
+                  
       # Iterate through each item in order of addition (push order).  Takes a block which is passed |stack_id, item|.
       # Optional argument reverse (true or :reverse) iterates in reverse order (pop order).
-      def each_item(reverse=false, &block); raise 'Must implement each_item'; end
+      def each_id_item(reverse=false, &block); raise 'Must implement each_id_item'; end
         
-      # Returns items in an array with stack id e.g. [[stack_id, Item], ...]
+      # Returns item stack_ids in an array
       # Arguments:
       #   undone  :undone|true | :not_undone|false  (default = nil, which means neither)
       #   to      :first|:all|Integer stack id      (default = :all)
@@ -138,17 +139,17 @@ module Ardes #:nodoc:
       # If undone is :undone|true, then the order of the items is revered.  This is so that
       # items are returned in the order they should be processed
       #
-      # This method depends on each_item, which is trivial to implement in many cases.
+      # This method depends on each_id_item, which is trivial to implement in many cases.
       # However, in the case of a database driven stack, it may be more efficient to override
-      # this method and implement each_item using this method.
-      def items(undone = nil, to = :all)
+      # this method and implement each_id_item using this method.
+      def item_ids(undone = nil, to = :all)
         undone = true if undone == :undone
         undone = false if undone == :not_undone
         compare = (undone ? '<=' : '>=')
         result = Array.new
-        each_item(undone==false) do |id, item|
+        each_id_item(undone==false) do |id, item|
           if undone.nil? or item.undone? == undone
-            result << [id, item]
+            result << id
             unless to == :all
               break if to == :first or to.send(compare, id)
             end
@@ -195,22 +196,32 @@ module Ardes #:nodoc:
           redo_items to
         end
       end
-            
+      
       def undoables(to = :all)
-        @stack.items :not_undone, to
+        to = to[:to] if to.is_a? Hash
+        if to.is_a? Array
+          return [] if to.size == 0
+          to = to.sort.first
+        end
+        @stack.item_ids :not_undone, to
       end
       
       def redoables(to = :all)
-        @stack.items :undone, to
+        to = to[:to] if to.is_a? Hash
+        if to.is_a? Array
+          return [] if to.size == 0
+          to = to.sort.last
+        end
+        @stack.item_ids :undone, to
       end
     
     protected
       def undo_items(to)
-        undoables(to).each { |id,item| item.undo; @stack.update_item id, item }
+        undoables(to).each { |id| @stack.item_at(id) {|item| item.undo}}
       end
       
       def redo_items(to)
-        redoables(to).each { |id,item| item.redo; @stack.update_item id, item }
+        redoables(to).each { |id| @stack.item_at(id) {|item| item.redo}}
       end
     end
   end

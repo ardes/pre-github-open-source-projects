@@ -32,21 +32,23 @@ module Ardes# :nodoc:
           item.save!
           item.attributes[primary_key]
         end
-
-        def update_item(pkId, item)
-          to_update = find(pkId)
-          to_update.attributes = item.attributes
-          to_update.save!
+        
+        def item_at(pkId)
+          return unless item = find(pkId)
+          if block_given?
+            yield item 
+            item.save
+          end
         end
 
-        def each_item(reverse = false, &block)
-          item_list = items
-          item_list.reverse! if reverse
-          item_list.each(&block)
+        def each_id_item(reverse = false)
+          ids = self.item_ids
+          ids.reverse! if reverse
+          ids.each {|id| yield(id, find(id)) }
         end
 
         # See Ardes::Undo::AbstractStack.items
-        def items(undone = nil, to = :all)
+        def item_ids(undone = nil, to = :all)
           undone = true if undone == :undone
           undone = false if undone == :not_undone
     
@@ -58,7 +60,7 @@ module Ardes# :nodoc:
           find_opts[:limit] = 1 if to == :first
           find_opts[:conditions] = [conditions.join(" and ")] if conditions.size > 0
 
-          find(:all, find_opts).collect {|r| [r.id, r]}
+          find(:all, find_opts).collect {|r| r.id}
         end
       end
       

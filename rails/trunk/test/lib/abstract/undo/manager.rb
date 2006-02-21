@@ -10,40 +10,42 @@ module Test
         def setup
           setup_objects
           @stack = @manager.stack
-          (0..2).each {@stack.push_item(@new_item_proc.call)}
-          @ids = Array.new
-          @items = Array.new
-          @stack.each_item {|id,item| @ids << id; @items << item}
+          @ids = (0..2).collect {@stack.push_item(@new_item_proc.call)}
         end
         
         def test_manager
           @manager.undo :all
-          assert_equal [true, true, true], @stack.items.collect {|id,item| item.undone?}
+          
+          result = []; @stack.each_id_item {|id,item| result << item.undone?}
+          assert_equal [true, true, true], result
           assert_equal [], @manager.undo(:first)
           
-          assert_equal [ [@ids[0], @items[0]] ], @manager.redo
-          assert_equal [false, true, true], @stack.items.collect {|id,item| item.undone?}
+          assert_equal [@ids[0]], @manager.redo
+          result = []; @stack.each_id_item {|id,item| result << item.undone?}
+          assert_equal [false, true, true], result
           
           @manager.redo :all
-          assert_equal [false, false, false], @stack.items.collect {|id,item| item.undone?}
+          result = []; @stack.each_id_item {|id,item| result << item.undone?}
+          assert_equal [false, false, false], result
           
-          assert_equal [ [@ids[2], @items[2]], [@ids[1], @items[1]] ], @manager.undo(@ids[1])
+          assert_equal [@ids[2], @ids[1]], @manager.undo(@ids[1])
           
-          assert_equal [false, true, true], @stack.items.collect {|id,item| item.undone?}
+          result = []; @stack.each_id_item {|id,item| result << item.undone?}
+          assert_equal [false, true, true], result
           
           @manager.redo
           
-          assert_equal [ [@ids[1],@items[1]], [@ids[0],@items[0]] ], @manager.undoables
-          assert_equal [ [@ids[2],@items[2]] ], @manager.redoables
+          assert_equal [@ids[1], @ids[0]], @manager.undoables
+          assert_equal [@ids[2]], @manager.redoables
           
           @manager.undo
 
-          assert_equal [ [@ids[0],@items[0]] ], @manager.undoables
-          assert_equal [ [@ids[1],@items[1]], [@ids[2],@items[2]] ], @manager.redoables
+          assert_equal [@ids[0]], @manager.undoables
+          assert_equal [@ids[1], @ids[2]], @manager.redoables
           
           id = @manager.push(new_item = @new_item_proc.call)
           
-          assert_equal [ [id,new_item], [@ids[0],@items[0]] ], @manager.undoables
+          assert_equal [id, @ids[0]], @manager.undoables
           assert_equal [], @manager.redoables
         end
       end

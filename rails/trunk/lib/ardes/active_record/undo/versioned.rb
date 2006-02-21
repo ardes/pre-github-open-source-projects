@@ -17,6 +17,15 @@ module Ardes
         end
         
         module SingletonMethods
+          def create_item(record, down_version, up_version)
+            self.new(
+              :obj_class_name   => record.class.name,
+              :obj_id           => record.attributes[record.class.primary_key],
+              :down_version     => down_version,
+              :up_version       => up_version)
+          end
+            
+            
           def create_undo_table(create_table_options = {})
             self.connection.create_table(table_name, create_table_options) do |t|
               t.column :undone, :boolean, :default => false, :null => false
@@ -24,7 +33,6 @@ module Ardes
               t.column :obj_id, :integer, :null => false
               t.column :down_version, :integer, :null => true
               t.column :up_version, :integer, :null => true
-              t.column :obj_description, :string, :null => true
             end
           end
 
@@ -117,19 +125,20 @@ module Ardes
 
           def after_save(r)
             return unless @capturing
-            capture_item(r, r.version)
+            @items << @stack.create_item(r, @down[r.object_id], r.version)
+            @down.delete r.object_id
           end
 
           def after_destroy(r)
             return unless @capturing
-            capture_item(r, nil)
-          end
+            @items << @stack.create_item(r, @down[r.object_id], nil)
+            @down.delete r.object_id
+           end
           
         protected
           def execute_block
             start_undoable
             yield
-          ensure
             end_undoable
           end
 
@@ -143,25 +152,10 @@ module Ardes
             @capturing = false
             if @items.size > 0
               @stack.delete_undone_items
-              @items.collect {|item| [@stack.push_item(item), item]}
+              @items.collect {|item| @stack.push_item(item)}
+            else
+              nil
             end
-            @items
-          end
-
-          def capture_item(r, up_version)
-            unless @down[r.object_id] == up_version
-              if (desc = r.to_s) =~ /^\#\<.*\>$/  #don't use to_s if it's the default Object.to_s
-                desc = "#{r.class.name.downcase}: #{r.attributes[r.class.primary_key]}"
-              end
-              @items << @stack.new(
-                :obj_class_name   => r.class.name,
-                :obj_id           => r.attributes[r.class.primary_key],
-                :down_version     => @down[r.object_id],
-                :up_version       => up_version,
-                :obj_description  => desc)
-            end
-            @down.delete r.object_id
-            true
           end
         end
       end
