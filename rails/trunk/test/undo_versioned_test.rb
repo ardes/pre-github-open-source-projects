@@ -4,9 +4,9 @@ require 'ardes/undo/versioned'
 require 'acts_as_versioned.rb'
 
 module ArdesTests
-  module ActiveRecordUndoVersioned
+  module UndoVersioned
     class UndoVersionedItem < ActiveRecord::Base
-      include Ardes::Undo::Versioned::ActiveRecord
+      include Ardes::Undo::Versioned::ActiveRecordStack
     end
   
     require 'abstract/undo/item'

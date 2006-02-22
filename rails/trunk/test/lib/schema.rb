@@ -43,5 +43,6 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
     t.column :obj_description, :string, :null => true
+    t.column :created_at, :timestamp
   end
 end

@@ -1,4 +1,4 @@
-require 'ardes/undo/active_record'
+require 'ardes/undo/active_record_stack'
 
 module Ardes# :nodoc:
   module Undo# :nodoc:
@@ -9,27 +9,30 @@ module Ardes# :nodoc:
 
         def self.for(scope = :application, *args)
           scope = scope.to_s.singularize
-          
           # Return the manager for the scope if we have one
-          return @@managers[scope] if @@managers[scope]
-          
-          # If passed arguments after scope, use them to make new manager
-          return @@managers[scope] = self.new(*args) if args.size > 0
-          
-          # Otherwise infer the stack class name from the scope
+          if @@managers[scope]  
+            return @@managers[scope] 
+          # If passed args, use them to make new manager
+          elsif args.size > 0   
+            return @@managers[scope] = self.new(*args)
+          # Otherwise, create the new manager with stack from scope
+          else                 
+            return @@managers[scope] = self.new(active_record_stack_for_scope(scope))
+          end
+        end
+        
+        def self.active_record_stack_for_scope(scope)
           stack_class_name = scope.classify << "UndoItem"
 
           # Create the command stack ActiveRecord class if it doesn't exist
           unless eval("defined?(#{stack_class_name})") == 'constant'
             eval <<-EOL
                class ::#{stack_class_name} < ::ActiveRecord::Base
-                 include Ardes::Undo::Versioned::ActiveRecord
+                 include Ardes::Undo::Versioned::ActiveRecordStack
                end
             EOL
           end
-          
-          # Create the new manager with the inferred class name
-          eval "@@managers[scope] = self.new #{stack_class_name}"
+          eval stack_class_name
         end
 
         def execute(&block)
@@ -85,11 +88,11 @@ module Ardes# :nodoc:
         end
       end
       
-      module ActiveRecord
+      module ActiveRecordStack
         def self.included(base) # :nodoc:
           super
           base.class_eval do
-            include Ardes::Undo::ActiveRecord
+            include Ardes::Undo::ActiveRecordStack
             extend SingletonMethods
             include InstanceMethods
           end
@@ -114,6 +117,7 @@ module Ardes# :nodoc:
               t.column :obj_id, :integer, :null => false
               t.column :down_version, :integer, :null => true
               t.column :up_version, :integer, :null => true
+              t.column :created_at, :timestamp
             end
           end
 

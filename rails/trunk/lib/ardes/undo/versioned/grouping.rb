@@ -5,59 +5,104 @@ module Ardes# :nodoc:
     module Versioned# :nodoc:
       module Grouping
         class Manager < Ardes::Undo::Versioned::Manager
-          attr_reader :grouping
         
-          def self.for(scope = :application, *args)
-            manager = super(scope, *args)
-          
-            unless manager.grouping
-              grouping_class_name = scope.to_s.singularize.classify + 'UndoGrouping'
-              unless eval("defined?(#{grouping_class_name})") == 'constant'
-                eval <<-EOL
-                  class ::#{grouping_class_name} < ::ActiveRecord::Base
-                    include Ardes::Undo::Versioned::Grouping::ActiveRecord
-                    undo_table_name = '#{manager.stack.table_name}'
-                  end
-                EOL
-              end
-              manager.instance_eval { @grouping = eval grouping_class_name }
-            end
-            manager
-          end
+          def self.active_record_stack_for_scope(scope)
+            stack_class_name = scope.classify << "UndoItem"
 
-          def initialize(stack, grouping = nil)
-            super(stack)
-            @grouping = grouping
+            unless eval("defined?(#{stack_class_name})") == 'constant'
+              eval <<-EOL
+                 class ::#{stack_class_name} < ::ActiveRecord::Base
+                   include Ardes::Undo::Versioned::Grouping::ActiveRecordStack
+                 end
+              EOL
+            end
+            eval stack_class_name
           end
         end
       
-        module ActiveRecord
+        module ActiveRecordAtom
           def self.included(base) # :nodoc:
             super
             base.class_eval do
               extend SingletonMethods
               include InstanceMethods
-              cattr_accessor :undo_table_name
-              self.undo_table_name = self.name.gsub('Grouping', 'Item').tableize
+            end
+          end
+          
+          module SingletonMethods
+            def create_table(create_table_options = {})
+              self.connection.create_table(table_name, create_table_options) do |t|
+                t.column :obj_class_name, :string, :null => false
+                t.column :obj_id, :integer, :null => false
+                t.column :down_version, :integer, :null => true
+                t.column :up_version, :integer, :null => true
+              end
+            end
+          
+            # Rake migration task to drop the group table
+            def drop_table
+              self.connection.drop_table table_name
+            end
+          end
+          
+          module InstanceMethods
+            include Ardes::Undo::Versioned::ActiveRecordStack::InstanceMethods
+          end
+        end
+        
+        module ActiveRecordStack
+          def self.included(base) # :nodoc:
+            super
+            base.class_eval do
+              atom_class_name = self.name + 'Atom'
+              # create atom class
+              eval <<-EOL
+                class ::#{atom_class_name} < ::ActiveRecord::Base
+                  include ActiveRecordAtom
+                  belongs_to :#{table_name}
+                end
+              EOL
+              cattr_accessor :atom_class, :atom_table_name
+              self.atom_class      = eval atom_class_name
+              self.atom_table_name = atom_class_name.tableize
+              
+              has_many self.atom_table_name.to_sym, :dependent => true
+              extend SingletonMethods
+              include InstanceMethods
             end
           end
 
           module SingletonMethods
+            include Ardes::Undo::ActiveRecordStack::SingletonMethods
+
+            def new_item(items)
+            end
+            
             def create_table(create_table_options = {})
               self.connection.create_table(table_name, create_table_options) do |t|
-                 t.column :description, :string
+                t.column :undone, :boolean, :default => false, :null => false
+                t.column :description, :string
+                t.column :created_at, :timestamp
               end
-              self.connection.add_column self.undo_table_name, :grouping_id, :integer
             end
 
             # Rake migration task to drop the group table
             def drop_table
               self.connection.drop_table table_name
-              self.connection.remove_column self.undo_table_name, :grouping_id
             end
           end
 
           module InstanceMethods
+            include Ardes::Undo::ActiveRecordStack::InstanceMethods
+            
+          protected
+            def on_undo
+              send(self.atom_table_name).each {|a| a.on_undo}
+            end
+
+            def on_redo
+              send(self.atom_table_name).reverse_each {|a| a.on_redo}
+            end
           end
         end
       end

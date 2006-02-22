@@ -7,7 +7,7 @@ module Ardes# :nodoc:
     #
     # The stack is the class, and the item is the ActiveRecord object
     #
-    module ActiveRecord
+    module ActiveRecordStack
       def self.included(base) # :nodoc:
         super
         base.class_eval do

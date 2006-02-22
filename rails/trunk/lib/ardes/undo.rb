@@ -202,7 +202,6 @@ module Ardes #:nodoc:
       end
       
       def undoables(to = :all)
-        to = to[:to] if to.is_a? Hash
         if to.is_a? Array
           return [] if to.size == 0
           to = to.sort.first
@@ -211,7 +210,6 @@ module Ardes #:nodoc:
       end
       
       def redoables(to = :all)
-        to = to[:to] if to.is_a? Hash
         if to.is_a? Array
           return [] if to.size == 0
           to = to.sort.last
