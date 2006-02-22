@@ -1,4 +1,4 @@
-require 'ardes/active_record/undo/versioned'
+require 'ardes/undo/versioned/grouping'
 
 module Ardes# :nodoc:
   module ActiveRecord# :nodoc:
@@ -64,7 +64,7 @@ module Ardes# :nodoc:
             scope = (args.pop or :application)
             
             cattr_accessor :undo_manager
-            self.undo_manager = Ardes::ActiveRecord::Undo::Versioned::Manager.for(scope, options[:undo_stack])
+            self.undo_manager = Manager.for(scope, *(options[:manager] or []))
             
             before_save     self.undo_manager
             before_destroy  self.undo_manager
@@ -88,6 +88,9 @@ module Ardes# :nodoc:
           def send_undoable(methodname, *args)
             undo_manager.execute {self.send(methodname, *args)}
           end
+        end
+        
+        class Manager < Ardes::Undo::Versioned::Grouping::Manager
         end
       end
     end
