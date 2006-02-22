@@ -1,11 +1,11 @@
 require 'load_ar'
 require 'test/unit'
-require 'ardes/active_record/undo'
+require 'ardes/undo/active_record'
 
 module ArdesTests
   module ActiveRecordUndo
     class UndoItem < ActiveRecord::Base
-      acts_as_undo_stack
+      include Ardes::Undo::ActiveRecord
     protected
       def on_undo; "undone"; end
       def on_redo; "redone"; end

@@ -1,12 +1,12 @@
 require 'load_ar'
 require 'test/unit'
-require 'ardes/active_record/undo/versioned'
+require 'ardes/undo/versioned'
 require 'acts_as_versioned.rb'
 
 module ArdesTests
   module ActiveRecordUndoVersioned
     class UndoVersionedItem < ActiveRecord::Base
-      acts_as_versioned_undo_stack
+      include Ardes::Undo::Versioned::ActiveRecord
     end
   
     require 'abstract/undo/item'
@@ -36,7 +36,7 @@ module ArdesTests
       include ArdesTests::Abstract::Undo::Manager
   
       def setup_objects
-        @manager = Ardes::ActiveRecord::Undo::Versioned::Manager.new UndoVersionedItem
+        @manager = Ardes::Undo::Versioned::Manager.new UndoVersionedItem
         UndoVersionedItem.delete_all
         @new_item_proc = Proc.new { UndoVersionedItem.new }
       end
@@ -53,7 +53,7 @@ module ArdesTests
       alias_method :teardown, :setup
 
       def test_versioned_migration
-        m = Ardes::ActiveRecord::Undo::Versioned::Manager.for :things
+        m = Ardes::Undo::Versioned::Manager.for :things
         assert_raises(ActiveRecord::StatementInvalid) { m.stack.count }
         # take 'er up
         ActiveRecord::Migrator.up(File.dirname(__FILE__) + '/fixtures/migrations/')

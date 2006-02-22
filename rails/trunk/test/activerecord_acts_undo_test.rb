@@ -17,7 +17,7 @@ module ArdesTests
 
     class ActsAsUndoTest < Test::Unit::TestCase
       def setup
-        @manager = Ardes::ActiveRecord::Undo::Versioned::Manager.for :products
+        @manager = Ardes::ActiveRecord::Acts::Undo::Manager.for :products
       end
     
       def test_manager_linked
