@@ -8,50 +8,80 @@ module Ardes# :nodoc:
       #
       # ===Example of use
       #
-      #   class MyProduct < ActiveRecord::Base
-      #     acts_as_undoable :products
-      #     has_many :my_parts, :dependent => true
-      #   end
-      # 
-      #   class MyPart < ActiveRecord::Base
-      #     acts_as_undoable :products
-      #     belongs_to: my_product
-      #   end
-      #
-      #   @manager = MyProduct.undo_manager
-      #   c = nil
-      #
-      #   # start with a new chandelier
-      #   chandelier_created_with_gold_leaf = @manager.execute do
-      #     c = MyProduct.create(:name => 'chandelier')
-      #     c.my_parts << (MyPart.new(:name => 'gold leaf'))
-      #     c.save
+      #   class Vehicle < ActiveRecord::Base
+      #     acts_as_undoable :vehicles
+      #     has_many :parts, :dependent => true
       #   end
       #   
-      #   # add some glass beads
-      #   glass_beads_added = @manager.execute do
-      #     c.my_parts << (MyPart.new(:name => 'glass bead'))
-      #     c.my_parts << (MyPart.new(:name => 'glass bead'))
-      #     c.save
+      #   class Part < ActiveRecord::Base
+      #     acts_as_undoable :vehicles
+      #     belongs_to :vehicle
       #   end
       #   
-      #   # now junk the chandelier (and the dependent parts)
-      #   chandelier_destroyed = @manager.execute do
-      #     FineProduct.find(c.id).destroy
+      #   # get the manager (could also use Vehicle.undo_manager or Part.undo_manager
+      #   @manager = Ardes::ActiveRecord::Acts::Undo::Manager.for :vehicles
+      #   
+      #   # create a car
+      #   car = nil
+      #   create_car = @manager.execute do |opts| 
+      #     car = Vehicle.new(:name => 'Car')
+      #     (1..4).each {|i| car.parts << Part.new(:name => "Wheel #{i}")}
+      #     opts[:description] = "Car with 4 wheels created"
+      #     car.save
       #   end
+      #   # => 1 (the id of the undoable corresponding to the above operations)
       #   
-      #   # We now have nothing, but along the way a chandelier with 1 part was created
-      #   # and then two new parts were added to that
-      #
-      #   # NOW, lets undo some of that
+      #   # change the car            
+      #   change_car = @manager.execute(:description => "Lost a wheel and gained a fender") do |opts| 
+      #     wheel = Part.find_by_vehicle_id_and_name(car.id, 'Wheel 3')
+      #     wheel.destroy
+      #     car.parts << Part.new(:name => 'Fender')
+      #     car.name = "Changed Car"
+      #     car.save
+      #   end 
+      #   # => 2
       #   
-      #   @manager.undo glass_beads_added # will undo the destroy, and the glass_beads
+      #   # what can be undone?
+      #   @manager.undoables
+      #   # => [2, 1]
       #   
-      #   @manager.redo glass_beads_added # add the beads again
+      #   # get a better idea of that (useful for a select list)
+      #   @manager.descriptions(@manager.undoables)
+      #   # => [[2, "Lost a wheel and gained a fender"], [1, "Car with 4 wheels created"]]
       #   
-      #   # getting rid of chandelier will undo all ops to that point, which means no hanging foriegn keys
-      #   @manager.undo chandelier_created_with_gold_leaf  
-      #
+      #   # Check the database before undo.  We should have ChangedCar with Wheels 1,2,4 and a Fender
+      #   Vehicle.find_first.name                       
+      #   # => 'Changed Car'
+      #   Vehicle.find_first.parts.collect {|p| p.name}
+      #   # => ['Wheel 1', 'Wheel 2', 'Wheel 4', 'Fender']
+      #   
+      #   # Undo change_car (could also use @manager.undo :first, or simply @manager.undo)
+      #   @manager.undo change_car
+      #   
+      #   # Check the database to make sure we're back with our car before the change
+      #   Vehicle.find_first.name                       
+      #   # => 'Car'
+      #   Vehicle.find_first.parts.collect {|p| p.name}
+      #   # => ['Wheel 1', 'Wheel 2', 'Wheel 3', 'Wheel 4']
+      #   
+      #   # Undo create_car
+      #   @manager.undo create_car
+      #   
+      #   # Check that we have nothing in db
+      #   Vehicle.find_all                    
+      #   # => []
+      #   Part.find_all                                 
+      #   # => []
+      #   
+      #   # Redo change_car (which will also redo create_car in order to do this)
+      #   @manager.redo change_car
+      #   
+      #   # Check the database.  We should be back at ChangedCar with Wheels 1,2,4 and a Fender
+      #   Vehicle.find_first.name                       
+      #   # => 'Changed Car'
+      #   Vehicle.find_first.parts.collect {|p| p.name} 
+      #   # => ['Wheel 1', 'Wheel 2', 'Wheel 4', 'Fender']
+      #   
       module Undo
 
         def self.included(base)

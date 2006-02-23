@@ -8,15 +8,14 @@ module Ardes# :nodoc:
         
           def self.active_record_stack_for_scope(scope)
             stack_class_name = scope.classify << "UndoItem"
-
-            unless eval("defined?(#{stack_class_name})") == 'constant'
-              eval <<-EOL
-                 class ::#{stack_class_name} < ::ActiveRecord::Base
-                   include Ardes::Undo::Versioned::Grouping::ActiveRecordStack
-                 end
-              EOL
-            end
-            eval stack_class_name
+            stack_class_name.constantize
+          
+          rescue NameError # create stack on demand
+            eval <<-EOL
+              class ::#{stack_class_name} < ::ActiveRecord::Base
+                include Ardes::Undo::Versioned::Grouping::ActiveRecordStack
+              end
+            EOL
           end
           
           def execute(options = {}, &block)
@@ -88,10 +87,10 @@ module Ardes# :nodoc:
 
           module SingletonMethods
 
-            def new_item(atoms, options = {})
+            def new_item(atoms, attributes = {})
               item = self.new
+              item.attributes = attributes
               item.send("#{self.atoms.table_name}=", atoms)
-              item.description = options[:description]
               item
             end
             

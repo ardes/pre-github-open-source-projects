@@ -25,16 +25,14 @@ module Ardes# :nodoc:
         
         def self.active_record_stack_for_scope(scope)
           stack_class_name = scope.classify << "UndoItem"
-
-          # Create the command stack ActiveRecord class if it doesn't exist
-          unless eval("defined?(#{stack_class_name})") == 'constant'
-            eval <<-EOL
-               class ::#{stack_class_name} < ::ActiveRecord::Base
-                 include Ardes::Undo::Versioned::ActiveRecordStack
-               end
-            EOL
-          end
-          eval stack_class_name
+          stack_class_name.constantize
+          
+        rescue NameError # create stack on demand
+          eval <<-EOL
+             class ::#{stack_class_name} < ::ActiveRecord::Base
+               include Ardes::Undo::Versioned::ActiveRecordStack
+             end
+          EOL
         end
 
         def initialize(*args)
@@ -178,12 +176,7 @@ module Ardes# :nodoc:
           def change_version(from_version, to_version)
             return true if from_version == to_version
 
-            # guard against rogue databse data
-            unless eval("defined?(#{obj_class_name})") == 'constant'
-              raise RuntimeError, "Invalid Class: #{self.obj_class_name.inspect}"
-            end
-
-            obj_class = eval obj_class_name
+            obj_class = obj_class_name.constantize
 
             if to_version.nil?
               # sometimes ActiveRecord saves record in an order that means that dependent
