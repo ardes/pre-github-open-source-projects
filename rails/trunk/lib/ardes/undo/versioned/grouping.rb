@@ -23,6 +23,10 @@ module Ardes# :nodoc:
             super(options, &block)
           end
           
+          def description(id)
+            @stack.item_at(id).description
+          end
+          
           def descriptions(ids)
             ids.collect {|id| [id, @stack.item_at(id).description]}
           end
@@ -91,6 +95,12 @@ module Ardes# :nodoc:
               item
             end
             
+            def delete_undone_items
+              find(:all,:conditions=>[undone_column << " = 1"]).each do |item|
+                item.destroy
+              end
+            end
+
             # this call must be made before acts_as_versioned is called
             # otherwise the callbacks will not occur in the correct order to capture versioning info
             def create_table(create_table_options = {})
@@ -112,11 +122,11 @@ module Ardes# :nodoc:
             
           protected
             def on_undo
-              send(self.atoms.table_name).reverse_each {|atom| atom.on_undo}
+              send(self.atoms.table_name).reverse_each {|atom| atom.undo}
             end
 
             def on_redo
-              send(self.atoms.table_name).each {|atom| atom.on_redo}
+              send(self.atoms.table_name).each {|atom| atom.redo}
             end
           end
         end
@@ -150,9 +160,8 @@ module Ardes# :nodoc:
           module InstanceMethods
             include Ardes::Undo::Versioned::ActiveRecordStack::InstanceMethods
             
-          public
-            def on_undo; super; end
-            def on_redo; super; end
+            def undo; on_undo; end
+            def redo; on_redo; end
           end
         end
       end

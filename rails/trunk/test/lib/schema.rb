@@ -103,4 +103,46 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
   end
+  
+  #
+  # Tables for active_record_acts_undo_test
+  #
+  create_table :vehicles, :force => true do |t|
+    t.column :version, :integer
+    t.column :name, :string
+  end
+
+  create_table :vehicle_versions, :force => true do |t|
+    t.column :vehicle_id, :integer
+    t.column :version, :integer
+    t.column :name, :string
+  end
+  
+  create_table :parts, :force => true do |t|
+    t.column :vehicle_id, :integer
+    t.column :version, :integer
+    t.column :name, :string
+  end
+
+  create_table :part_versions, :force => true do |t|
+    t.column :part_id, :integer
+    t.column :vehicle_id, :integer
+    t.column :version, :integer
+    t.column :name, :string
+  end
+  
+  create_table :vehicle_undo_items, :force => true do |t|
+    t.column :undone, :boolean, :default => false, :null => false
+    t.column :description, :string, :null => true
+    t.column :created_at, :timestamp
+  end
+  
+  create_table :vehicle_undo_item_atoms, :force => true do |t|
+    t.column :vehicle_undo_item_id, :integer
+    t.column :obj_class_name, :string, :null => false
+    t.column :obj_id, :integer, :null => false
+    t.column :down_version, :integer, :null => true
+    t.column :up_version, :integer, :null => true
+  end
+    
 end

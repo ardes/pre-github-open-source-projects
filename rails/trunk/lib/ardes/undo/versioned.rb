@@ -186,7 +186,10 @@ module Ardes# :nodoc:
             obj_class = eval obj_class_name
 
             if to_version.nil?
-              obj_class.destroy self.obj_id
+              # sometimes ActiveRecord saves record in an order that means that dependent
+              # objects will be destroyed by dependent associations before we get the
+              # chance to destroy them, hence 'rescue ::ActiveRecord::RecordNotFound'
+              obj_class.destroy self.obj_id rescue ::ActiveRecord::RecordNotFound
             else
               # There's probably a better way to do this
               # This way: create a new obj, set it's pk and revert the object
