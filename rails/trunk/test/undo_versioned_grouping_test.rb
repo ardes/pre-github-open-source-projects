@@ -58,7 +58,7 @@ module ArdesTests
       belongs_to :g_fine_product
       cattr_accessor :undo_manager
       self.undo_manager = Ardes::Undo::Versioned::Grouping::Manager.for :g_products
-      self.undo_manager.manage(self)      
+      self.undo_manager.manage(self)
       acts_as_versioned
     end
     

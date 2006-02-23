@@ -25,7 +25,7 @@ module Ardes# :nodoc:
           delete_all(undone_column << " = 1")
         end
 
-        def push_item(item)
+        def push_item(item, options = {})
           item.save!
           item.attributes[primary_key]
         end
@@ -36,6 +36,7 @@ module Ardes# :nodoc:
             yield item 
             item.save
           end
+          item
         end
 
         def each_id_item(reverse = false)

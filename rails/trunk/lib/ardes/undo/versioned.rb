@@ -71,11 +71,11 @@ module Ardes# :nodoc:
           @managed.each {|m| m.drop_versioned_table }
         end
                   
-        def execute(&block)
+        def execute(*args, &block)
           if @stack.respond_to? :transaction
-            @stack.transaction { execute_block(&block) }
+            @stack.transaction { execute_block(*args, &block) }
           else
-            execute_block(&block)
+            execute_block(*args, &block)
           end
         end
         
@@ -109,10 +109,10 @@ module Ardes# :nodoc:
               :up_version       => up_version)
         end
         
-        def execute_block
+        def execute_block(*args)
           start_undoable
-          yield
-          end_undoable
+          yield(*args)
+          end_undoable(*args)
         end
 
         def start_undoable
@@ -121,18 +121,18 @@ module Ardes# :nodoc:
           @capturing = true
         end
        
-        def end_undoable
+        def end_undoable(*args)
           @capturing = false
           if @undoables.size > 0
             @stack.delete_undone_items
-            push_undoables
+            push_undoables(*args)
           else
             Array.new
           end
         end
         
-        def push_undoables
-          @undoables.collect {|undoable| @stack.push_item(undoable)}
+        def push_undoables(*args)
+          @undoables.collect {|undoable| @stack.push_item(undoable, *args)}
         end
       end
       

@@ -19,6 +19,14 @@ module Ardes# :nodoc:
             eval stack_class_name
           end
           
+          def execute(options = {}, &block)
+            super(options, &block)
+          end
+          
+          def descriptions(ids)
+            ids.collect {|id| [id, @stack.item_at(id).description]}
+          end
+          
           # Rake migration task to create all tables needed by acts_as_undoable
           # Before using this method, ensure that all classes that act_as_undoable are loaded
           def create_tables(create_table_options = {})
@@ -42,8 +50,8 @@ module Ardes# :nodoc:
                 :up_version       => up_version)
           end
         
-          def push_undoables
-            @stack.push_item(@stack.new_item(@undoables,''))
+          def push_undoables(options = {})
+            @stack.push_item(@stack.new_item(@undoables, options))
           end
         end
       
@@ -76,10 +84,10 @@ module Ardes# :nodoc:
 
           module SingletonMethods
 
-            def new_item(atoms, description)
+            def new_item(atoms, options = {})
               item = self.new
               item.send("#{self.atoms.table_name}=", atoms)
-              item.description = description
+              item.description = options[:description]
               item
             end
             

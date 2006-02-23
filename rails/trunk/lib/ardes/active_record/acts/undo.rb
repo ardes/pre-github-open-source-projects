@@ -60,6 +60,9 @@ module Ardes# :nodoc:
 
         module ClassMethods
           def acts_as_undoable(*args, &extension)
+            # don't allow multiple calls
+            return if self.included_modules.include?(Ardes::ActiveRecord::Acts::Undo::ActMethods)
+            
             options = args.last.is_a?(Hash) ? args.pop : {}
             scope = (args.pop or :application)
             
@@ -89,7 +92,6 @@ module Ardes# :nodoc:
         end
         
         class Manager < Ardes::Undo::Versioned::Grouping::Manager
-
         end
       end
     end
