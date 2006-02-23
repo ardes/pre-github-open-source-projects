@@ -5,6 +5,8 @@ module Ardes# :nodoc:
     module Versioned# :nodoc:
       class Manager < Ardes::Undo::Manager
 
+        attr_reader :managed
+
         @@managers = Hash.new
 
         def self.for(scope = :application, *args)
@@ -35,6 +37,40 @@ module Ardes# :nodoc:
           eval stack_class_name
         end
 
+        def initialize(*args)
+          super(*args)
+          @managed = Array.new
+        end
+        
+        # this call must be made before acts_as_versioned is called
+        # otherwise the callbacks will not occur in the correct order to capture versioning info
+        def manage(acting_as_undoable)
+          unless @managed.include? acting_as_undoable
+            undo_manager = self
+            acting_as_undoable.class_eval do
+              before_save     undo_manager
+              before_destroy  undo_manager
+              after_save      undo_manager
+              after_destroy   undo_manager
+             end
+            @managed << acting_as_undoable 
+          end
+        end
+        
+        # Rake migration task to create all tables needed by acts_as_undoable
+        # Before using this method, ensure that all classes that act_as_undoable are loaded
+        def create_tables(create_table_options = {})
+          @managed.each {|m| m.create_versioned_table(create_table_options) }
+          @stack.create_table(create_table_options)
+        end
+        
+        # Rake migration task to drop all acts_as_undoable tables
+        # Before using this method, ensure that all classes that act_as_undoable are loaded
+        def drop_tables
+          @stack.drop_table
+          @managed.each {|m| m.drop_versioned_table }
+        end
+                  
         def execute(&block)
           if @stack.respond_to? :transaction
             @stack.transaction { execute_block(&block) }
@@ -54,17 +90,25 @@ module Ardes# :nodoc:
 
         def after_save(r)
           return unless @capturing
-          @items << @stack.new_item(r, @down[r.object_id], r.version)
+          capture_undoable(r, @down[r.object_id], r.version)
           @down.delete r.object_id
         end
 
         def after_destroy(r)
           return unless @capturing
-          @items << @stack.new_item(r, @down[r.object_id], nil)
+          capture_undoable(r, @down[r.object_id], nil)
           @down.delete r.object_id
          end
         
       protected
+        def capture_undoable(record, down_version, up_version)
+          @undoables << @stack.new(
+              :obj_class_name   => record.class.name,
+              :obj_id           => record.attributes[record.class.primary_key],
+              :down_version     => down_version,
+              :up_version       => up_version)
+        end
+        
         def execute_block
           start_undoable
           yield
@@ -73,18 +117,22 @@ module Ardes# :nodoc:
 
         def start_undoable
           @down = Hash.new
-          @items = Array.new
+          @undoables = Array.new
           @capturing = true
         end
        
         def end_undoable
           @capturing = false
-          if @items.size > 0
+          if @undoables.size > 0
             @stack.delete_undone_items
-            @items.collect {|item| @stack.push_item(item)}
+            push_undoables
           else
             Array.new
           end
+        end
+        
+        def push_undoables
+          @undoables.collect {|undoable| @stack.push_item(undoable)}
         end
       end
       
@@ -99,17 +147,6 @@ module Ardes# :nodoc:
         end
 
         module SingletonMethods
-          #include Ardes::Undo::ActiveRecord::SingletonMethods
-          
-          def new_item(record, down_version, up_version)
-            self.new(
-              :obj_class_name   => record.class.name,
-              :obj_id           => record.attributes[record.class.primary_key],
-              :down_version     => down_version,
-              :up_version       => up_version)
-          end
-
-
           def create_table(create_table_options = {})
             self.connection.create_table(table_name, create_table_options) do |t|
               t.column :undone, :boolean, :default => false, :null => false
@@ -128,8 +165,6 @@ module Ardes# :nodoc:
         end
 
         module InstanceMethods        
-         #include Ardes::Undo::ActiveRecord::InstanceMethods
-         
          protected
 
           def on_undo

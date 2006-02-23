@@ -67,11 +67,6 @@ module Ardes# :nodoc:
             self.undo_manager = Manager.for(scope, *(options[:manager] ? options[:manager] : Array.new) )
             self.undo_manager.manage(self)
             
-            before_save     self.undo_manager
-            before_destroy  self.undo_manager
-            after_save      self.undo_manager
-            after_destroy   self.undo_manager
-            
             acts_as_versioned(options, &extension)
                         
             include ActMethods
@@ -86,41 +81,15 @@ module Ardes# :nodoc:
             undo_manager.execute(&block)
           end
           
+          # send the named method to the reciever in an undoable context, using the
+          # reciever's undo_manager to execute the block
           def send_undoable(methodname, *args)
             undo_manager.execute {self.send(methodname, *args)}
           end
         end
         
         class Manager < Ardes::Undo::Versioned::Grouping::Manager
-          
-          attr_reader :managed
-          
-          def initialize(*args)
-            super(*args)
-            @managed = Array.new
-          end
-          
-          def manage(acting_as_undoable)
-            unless @managed.include? acting_as_undoable
-              @managed << acting_as_undoable 
-            end
-          end
-          
-          # Rake migration task to create all tables needed by acts_as_undoable
-          # Before using this method, ensure that all classes that act_as_undoable are loaded
-          def create_tables
-            @managed.each {|m| m.create_versioned_table }
-            @stack.create_table
-            @stack.atom_class.create_table
-          end
-          
-          # Rake migration task to drop all acts_as_undoable tables
-          # Before using this method, ensure that all classes that act_as_undoable are loaded
-          def drop_tables
-            @stack.atom_class.drop_table
-            @stack.drop_table
-            @managed.each {|m| m.drop_versioned_table }
-          end
+
         end
       end
     end
