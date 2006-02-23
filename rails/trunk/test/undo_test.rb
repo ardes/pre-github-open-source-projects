@@ -3,7 +3,7 @@ require 'ardes/undo'
 
 module ArdesTests
   module Undo
-    class Item
+    class ::Item
       include Ardes::Undo::AbstractItem
   
       attr_accessor :undone
@@ -16,7 +16,7 @@ module ArdesTests
       def on_redo; "#{@name} redone"; end
     end
 
-    class Stack
+    class ::Stack
       include Ardes::Undo::AbstractStack
 
       def initialize; @storage = Hash.new; @idx = 0; end

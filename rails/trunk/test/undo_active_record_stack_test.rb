@@ -4,7 +4,7 @@ require 'ardes/undo/active_record_stack'
 
 module ArdesTests
   module UndoActiveRecordStack
-    class UndoItem < ActiveRecord::Base
+    class ::UndoItem < ActiveRecord::Base
       include Ardes::Undo::ActiveRecordStack
     protected
       def on_undo; "undone"; end
