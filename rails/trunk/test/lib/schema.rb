@@ -9,6 +9,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :obj_id, :integer, :null => false
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
+    t.column :obj_description, :string
     t.column :created_at, :timestamp
   end
 
@@ -24,6 +25,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :obj_id, :integer, :null => false
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
+    t.column :obj_description, :string
   end
 
   #
@@ -102,6 +104,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :obj_id, :integer, :null => false
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
+    t.column :obj_description, :string
   end
   
   #
@@ -143,6 +146,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.column :obj_id, :integer, :null => false
     t.column :down_version, :integer, :null => true
     t.column :up_version, :integer, :null => true
+    t.column :obj_description, :string
   end
     
 end

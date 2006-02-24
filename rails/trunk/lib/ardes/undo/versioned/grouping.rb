@@ -20,14 +20,6 @@ module Ardes# :nodoc:
             super(options, &block)
           end
           
-          def description(id)
-            @stack.item_at(id).description
-          end
-          
-          def descriptions(ids)
-            ids.collect {|id| [@stack.item_at(id).description, id]}
-          end
-          
           # Rake migration task to create all tables needed by acts_as_undoable
           # Before using this method, ensure that all classes that act_as_undoable are loaded
           def create_tables(create_table_options = {})
@@ -48,10 +40,12 @@ module Ardes# :nodoc:
                 :obj_class_name   => record.class.name,
                 :obj_id           => record.attributes[record.class.primary_key],
                 :down_version     => down_version,
-                :up_version       => up_version)
+                :up_version       => up_version,
+                :obj_description  => record.respond_to?(:short_description) ? record.short_description : nil)
           end
         
           def push_undoables(options = {})
+            options[:description] = @undoables.last.description unless options[:description]
             @stack.push_item(@stack.new_item(@undoables, options))
           end
         end
@@ -117,7 +111,6 @@ module Ardes# :nodoc:
           end
 
           module InstanceMethods
-            
           protected
             def on_undo
               send(self.atoms.table_name).reverse_each {|atom| atom.undo}
@@ -146,6 +139,7 @@ module Ardes# :nodoc:
                 t.column :obj_id, :integer, :null => false
                 t.column :down_version, :integer, :null => true
                 t.column :up_version, :integer, :null => true
+                t.column :obj_description, :string
               end
             end
           

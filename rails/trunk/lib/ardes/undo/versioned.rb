@@ -78,6 +78,14 @@ module Ardes# :nodoc:
           end
         end
         
+        def description(id)
+          @stack.item_at(id).description
+        end
+        
+        def descriptions(ids)
+          ids.collect {|id| [@stack.item_at(id).description, id]}
+        end
+        
         alias_method :undoable, :execute
         
         def before_save(r)
@@ -99,13 +107,30 @@ module Ardes# :nodoc:
           @down.delete r.object_id
          end
         
+       def start_undoable
+         @down = Hash.new
+         @undoables = Array.new
+         @capturing = true
+       end
+
+       def end_undoable(*args)
+         @capturing = false
+         if @undoables.size > 0
+           @stack.delete_undone_items
+           push_undoables(*args)
+         else
+           Array.new
+         end
+       end
+
       protected
         def capture_undoable(record, down_version, up_version)
           @undoables << @stack.new(
               :obj_class_name   => record.class.name,
               :obj_id           => record.attributes[record.class.primary_key],
               :down_version     => down_version,
-              :up_version       => up_version)
+              :up_version       => up_version,
+              :obj_description  => record.respond_to?(:short_description) ? record.short_description : nil)
         end
         
         def execute_block(*args)
@@ -114,22 +139,6 @@ module Ardes# :nodoc:
           end_undoable(*args)
         end
 
-        def start_undoable
-          @down = Hash.new
-          @undoables = Array.new
-          @capturing = true
-        end
-       
-        def end_undoable(*args)
-          @capturing = false
-          if @undoables.size > 0
-            @stack.delete_undone_items
-            push_undoables(*args)
-          else
-            Array.new
-          end
-        end
-        
         def push_undoables(*args)
           @undoables.collect {|undoable| @stack.push_item(undoable, *args)}
         end
@@ -153,6 +162,7 @@ module Ardes# :nodoc:
               t.column :obj_id, :integer, :null => false
               t.column :down_version, :integer, :null => true
               t.column :up_version, :integer, :null => true
+              t.column :obj_description, :string
               t.column :created_at, :timestamp
             end
           end
@@ -163,7 +173,13 @@ module Ardes# :nodoc:
           end
         end
 
-        module InstanceMethods        
+        module InstanceMethods       
+          def description
+            return attributes['description'] if attributes['description']
+            desc = (obj_description or (obj_class_name + ': ' + obj_id.to_s))
+            desc += ' ' + (down_version.nil? ? 'created' : (up_version.nil? ? 'destroyed' : 'modified'))
+          end 
+         
          protected
 
           def on_undo
