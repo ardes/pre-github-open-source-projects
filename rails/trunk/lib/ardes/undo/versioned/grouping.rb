@@ -25,7 +25,7 @@ module Ardes# :nodoc:
           end
           
           def descriptions(ids)
-            ids.collect {|id| [@stack.item_at(id).description, id]}
+            ids.collect {|id| [@stack.item_at(id).description, id]}
           end
           
           # Rake migration task to create all tables needed by acts_as_undoable
