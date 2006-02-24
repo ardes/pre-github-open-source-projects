@@ -36,6 +36,7 @@ module Ardes# :nodoc:
           
         protected
           def capture_undoable(record, down_version, up_version)
+            return if down_version == up_version
             @undoables << @stack.atoms.new(
                 :obj_class_name   => record.class.name,
                 :obj_id           => record.attributes[record.class.primary_key],
@@ -88,7 +89,7 @@ module Ardes# :nodoc:
             end
             
             def delete_undone_items
-              find(:all,:conditions=>[undone_column << " = 1"]).each do |item|
+              find(:all,:conditions=>[undone_column + " = 1"]).each do |item|
                 item.destroy
               end
             end

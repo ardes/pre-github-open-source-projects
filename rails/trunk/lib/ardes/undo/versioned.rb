@@ -125,6 +125,7 @@ module Ardes# :nodoc:
 
       protected
         def capture_undoable(record, down_version, up_version)
+          return if down_version == up_version
           @undoables << @stack.new(
               :obj_class_name   => record.class.name,
               :obj_id           => record.attributes[record.class.primary_key],

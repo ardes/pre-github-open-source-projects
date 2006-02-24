@@ -22,7 +22,7 @@ module Ardes# :nodoc:
         include Ardes::Undo::AbstractStack
         
         def delete_undone_items
-          delete_all(undone_column << " = 1")
+          delete_all(undone_column + " = 1")
         end
 
         def push_item(item, options = {})
