@@ -202,22 +202,27 @@ module Ardes #:nodoc:
       end
       
       def undoables(to = :all)
-        if to.is_a? Array
-          return [] if to.size == 0
-          to = to.sort.first
-        end
+        return [] unless to = validate_to(to, :first)
         @stack.item_ids :not_undone, to
       end
-      
+
       def redoables(to = :all)
-        if to.is_a? Array
-          return [] if to.size == 0
-          to = to.sort.last
-        end
+        return [] unless to = validate_to(to, :last)
         @stack.item_ids :undone, to
       end
-    
+
     protected
+      def validate_to(to, first_or_last = :first)
+        if to.is_a? Symbol
+          return (to == :all or to == :first) ? to : false
+        elsif to.is_a? Array and to.size > 0
+          to.collect! {|t| t.to_i}
+          to = to.sort.send(first_or_last)
+        end
+        return (to.to_i > 0) ? to.to_i : false
+      rescue
+        false
+      end
       def undo_items(to)
         undoables(to).each { |id| @stack.item_at(id) {|item| item.undo}}
       end

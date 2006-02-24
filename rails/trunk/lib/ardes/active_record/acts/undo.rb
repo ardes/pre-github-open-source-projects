@@ -116,8 +116,17 @@ module Ardes# :nodoc:
           
           # send the named method to the reciever in an undoable context, using the
           # reciever's undo_manager to execute the block
-          def send_undoable(methodname, *args)
-            undo_manager.execute {self.send(methodname, *args)}
+          def send_undoable(method_args, *undoable_options)
+            if method_args.is_a? Array
+              method_name = method_args.shift
+             else
+              method_name = method_args
+              method_args = []
+            end
+            
+            result = nil
+            undo_manager.execute(*undoable_options) {result = self.send(method_name, *method_args)}
+            result
           end
         end
         

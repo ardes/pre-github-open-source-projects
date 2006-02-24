@@ -96,6 +96,7 @@ module ArdesTests
           # NOW, lets undo some of that
     
           @manager.undo glass_beads_added # will undo the destroy, and the glass_beads
+          
           assert_equal fine_count + 1, @fine_class.count
           assert_equal part_count + 1, @part_class.count
     

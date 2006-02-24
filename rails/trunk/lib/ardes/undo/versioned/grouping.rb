@@ -5,17 +5,15 @@ module Ardes# :nodoc:
     module Versioned# :nodoc:
       module Grouping
         class Manager < Ardes::Undo::Versioned::Manager
-        
-          def self.active_record_stack_for_scope(scope)
-            stack_class_name = scope.classify << "UndoItem"
-            stack_class_name.constantize
           
-          rescue NameError # create stack on demand
-            eval <<-EOL
+          def self.create_stack_class(stack_class_name)            
+            eval <<-EOD
               class ::#{stack_class_name} < ::ActiveRecord::Base
                 include Ardes::Undo::Versioned::Grouping::ActiveRecordStack
+                def self.reloadable? ; false ; end
               end
-            EOL
+            EOD
+            stack_class_name.constantize
           end
           
           def execute(options = {}, &block)
@@ -27,7 +25,7 @@ module Ardes# :nodoc:
           end
           
           def descriptions(ids)
-            ids.collect {|id| [id, @stack.item_at(id).description]}
+            ids.collect {|id| [@stack.item_at(id).description, id]}
           end
           
           # Rake migration task to create all tables needed by acts_as_undoable
@@ -66,14 +64,15 @@ module Ardes# :nodoc:
               
               # create atom class
               atom_class_name = self.name + 'Atom'
-              eval <<-EOL
+              eval <<-EOD
                 class ::#{atom_class_name} < ::ActiveRecord::Base
                   include ActiveRecordAtom
+                  def self.reloadable? ; false ; end
                   cattr_accessor :stack
                   self.stack = #{self.name}
                   belongs_to :#{table_name.singularize}
                 end
-              EOL
+              EOD
               
               cattr_accessor :atoms
               self.atoms = atom_class_name.constantize

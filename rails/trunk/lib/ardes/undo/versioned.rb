@@ -19,46 +19,47 @@ module Ardes# :nodoc:
             return @@managers[scope] = self.new(*args)
           # Otherwise, create the new manager with stack from scope
           else                 
-            return @@managers[scope] = self.new(active_record_stack_for_scope(scope))
+            return @@managers[scope] = self.new(stack_for_scope(scope))
           end
         end
         
-        def self.active_record_stack_for_scope(scope)
+        def self.stack_for_scope(scope)
           stack_class_name = scope.classify << "UndoItem"
           stack_class_name.constantize
           
         rescue NameError # create stack on demand
+          create_stack_class(stack_class_name)
+        end
+        
+        def self.create_stack_class(stack_class_name)
           eval <<-EOL
              class ::#{stack_class_name} < ::ActiveRecord::Base
                include Ardes::Undo::Versioned::ActiveRecordStack
+               def self.reloadable? ; false ; end
              end
           EOL
+          stack_class_name.constantize
         end
 
-        def initialize(*args)
-          super(*args)
-          @managed = Array.new
+        def initialize(stack)
+          super(stack)
+          @managed = Hash.new
         end
         
         # this call must be made before acts_as_versioned is called
         # otherwise the callbacks will not occur in the correct order to capture versioning info
         def manage(acting_as_undoable)
-          unless @managed.include? acting_as_undoable
-            undo_manager = self
-            acting_as_undoable.class_eval do
-              before_save     undo_manager
-              before_destroy  undo_manager
-              after_save      undo_manager
-              after_destroy   undo_manager
-             end
-            @managed << acting_as_undoable 
-          end
+          acting_as_undoable.before_save self
+          acting_as_undoable.before_destroy self
+          acting_as_undoable.after_save self
+          acting_as_undoable.after_destroy self
+          @managed[acting_as_undoable.name] = acting_as_undoable
         end
         
         # Rake migration task to create all tables needed by acts_as_undoable
         # Before using this method, ensure that all classes that act_as_undoable are loaded
         def create_tables(create_table_options = {})
-          @managed.each {|m| m.create_versioned_table(create_table_options) }
+          @managed.each {|name, m| m.create_versioned_table(create_table_options) }
           @stack.create_table(create_table_options)
         end
         
@@ -66,7 +67,7 @@ module Ardes# :nodoc:
         # Before using this method, ensure that all classes that act_as_undoable are loaded
         def drop_tables
           @stack.drop_table
-          @managed.each {|m| m.drop_versioned_table }
+          @managed.each {|name, m| m.drop_versioned_table }
         end
                   
         def execute(*args, &block)
