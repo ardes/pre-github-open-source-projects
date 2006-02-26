@@ -177,8 +177,8 @@ module Ardes# :nodoc:
         module InstanceMethods       
           def description
             return attributes['description'] if attributes['description']
-            desc = (obj_description or (obj_class_name + ': ' + obj_id.to_s))
-            desc += ' ' + (down_version.nil? ? 'created' : (up_version.nil? ? 'destroyed' : 'modified'))
+            desc = (down_version.nil? ? 'create' : (up_version.nil? ? 'destroy' : 'update')) + ' '
+            desc += (obj_description or (obj_class_name.humanize.downcase + ': ' + obj_id.to_s))
           end 
          
          protected
