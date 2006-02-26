@@ -82,8 +82,15 @@ module Ardes# :nodoc:
           @stack.item_at(id).description
         end
         
-        def descriptions(ids)
-          ids.collect {|id| [@stack.item_at(id).description, id]}
+        def descriptions
+          descs = Hash.new
+          @stack.items {|r| descs[r.id] = r.description}
+          descs
+        end
+        
+        def descriptions_for(ids = nil)
+          descs = descriptions
+          ids.collect {|id| [descs[id], id]}
         end
         
         alias_method :undoable, :execute

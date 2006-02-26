@@ -40,13 +40,17 @@ module Ardes# :nodoc:
         end
 
         def each_id_item(reverse = false)
-          ids = self.item_ids
-          ids.reverse! if reverse
-          ids.each {|id| yield(id, find(id)) }
+          list = self.items
+          list.reverse! if reverse
+          list.each {|r| yield(r.id, r) }
         end
 
         # See Ardes::Undo::AbstractStack.items
         def item_ids(undone = nil, to = :all)
+          items(undone, to) {|r| r.id }
+        end
+        
+        def items(undone = nil, to = :all)
           undone = true if undone == :undone
           undone = false if undone == :not_undone
     
@@ -58,7 +62,7 @@ module Ardes# :nodoc:
           find_opts[:limit] = 1 if to == :first
           find_opts[:conditions] = [conditions.join(" and ")] if conditions.size > 0
 
-          find(:all, find_opts).collect {|r| r.id}
+          find(:all, find_opts).collect {|r| block_given? ? yield(r) : r }
         end
       end
       
