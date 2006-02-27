@@ -43,13 +43,22 @@ module Ardes# :nodoc:
         module ManagerMethods
           def undo
             @undo_manager.undo(params[:id].nil? ? :first : params[:id])
-            redirect_to :action => 'list'
-          end
+            redirect_to_return params[:return_to]
+           end
   
           def redo
             @undo_manager.redo(params[:id].nil? ? :first : params[:id])
-            redirect_to :action => 'list'
+            redirect_to_return params[:return_to]
           end
+        
+        private
+          def redirect_to_return(params)
+            params = YAML.load(params)
+            controller = params.delete :controller
+            action = params.delete :action
+            redirect_to :controller => controller, :action => action, :params => params
+          end
+            
         end
         
         module UndoableMethods

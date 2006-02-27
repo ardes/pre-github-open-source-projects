@@ -10,6 +10,10 @@ module Ardes
           modalize_link(args[0], args[2], &block) or super(*args)
         end
         
+        def link_to_remote(*args, &block)
+          modalize_link(args[0], args[2], &block) or super(*args)
+        end
+        
         def submit_tag(*args, &block)
           attributes = modalize_form_control_attributes(args[1], &block)
           args[1] = attributes if attributes
