@@ -115,9 +115,11 @@ module Ardes# :nodoc:
          end
         
        def start_undoable
-         @down = Hash.new
-         @undoables = Array.new
-         @capturing = true
+         unless @capturing
+           @down = Hash.new
+           @undoables = Array.new
+           @capturing = true
+         end
        end
 
        def end_undoable(*args)
