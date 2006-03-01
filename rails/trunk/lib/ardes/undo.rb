@@ -146,7 +146,7 @@ module Ardes #:nodoc:
       # This method depends on each_id_item, which is trivial to implement in many cases.
       # However, in the case of a database driven stack, it may be more efficient to override
       # this method and implement each_id_item using this method.
-      def item_ids(undone = nil, to = :all)
+      def item_ids(undone = nil, to = :all, *args)
         undone = true if undone == :undone
         undone = false if undone == :not_undone
         compare = (undone ? '<=' : '>=')
@@ -201,14 +201,14 @@ module Ardes #:nodoc:
         end
       end
       
-      def undoables(to = :all)
+      def undoables(to = :all, *args)
         return [] unless to = validate_to(to, :first)
-        @stack.item_ids :not_undone, to
+        @stack.item_ids(:not_undone, to, *args)
       end
 
-      def redoables(to = :all)
+      def redoables(to = :all, *args)
         return [] unless to = validate_to(to, :last)
-        @stack.item_ids :undone, to
+        @stack.item_ids(:undone, to, *args)
       end
 
     protected

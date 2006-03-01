@@ -58,16 +58,20 @@ module Ardes# :nodoc:
         
         # Rake migration task to create all tables needed by acts_as_undoable
         # Before using this method, ensure that all classes that act_as_undoable are loaded
-        def create_tables(create_table_options = {})
-          @managed.each {|name, m| m.create_versioned_table(create_table_options) }
+        def create_tables(create_table_options = {}, create_versioned_tables = false)
+          if create_versioned_tables 
+            @managed.each {|name, m| m.create_versioned_table(create_table_options) }
+          end
           @stack.create_table(create_table_options)
         end
         
         # Rake migration task to drop all acts_as_undoable tables
         # Before using this method, ensure that all classes that act_as_undoable are loaded
-        def drop_tables
+        def drop_tables(drop_versioned_tables = false)
           @stack.drop_table
-          @managed.each {|name, m| m.drop_versioned_table }
+          if drop_versioned_tables
+            @managed.each {|name, m| m.drop_versioned_table }
+          end
         end
                   
         def execute(*args, &block)
