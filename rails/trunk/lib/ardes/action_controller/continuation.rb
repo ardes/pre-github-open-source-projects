@@ -2,14 +2,20 @@ module Ardes
   module ActionController
     module Continuation
       
+      CONTINUTAION_HANDLER_SESSION_VAR = '__continuation_handler'
+      
       def self.included(base)
         super
         base.extend(ClassMethods)
       end
 
       module ClassMethods
-        def has_continuations
+        def has_continuations(options = {})
           include InstanceMethods
+          self.class_eval do
+            cattr_accessor :continuation_session_vars
+            self.continuation_session_vars = (options[:session] or [])
+          end
         end
       end
       
@@ -19,19 +25,27 @@ module Ardes
           base.send :alias_method, :perform_action, :perform_action_with_continuations
         end
 
-      public
         def perform_action_with_continuations
           continuation_initialize
           page = catch :continuation_dispatch do
             return perform_action_without_continuations
           end
-          redirect_to page.redirect_options
+          # If we're here it means a :continuation_dispatch was thrown.
+          # If we're dispatching to an action in this controller, then
+          # pass control to it, otherwise redirect to the named controller
+          if page.url_options[:controller] == controller_name
+            params.merge(page.url_options[:params])
+            self.action_name = page.url_options[:action]
+            return perform_action
+          else
+            redirect_to page.url_options
+          end
         end
 
       private
         def continuation_initialize
-          session['__continuation_handler'] = Handler.new unless session['__continuation_handler']
-          @continuation_handler = session['__continuation_handler']
+          session[CONTINUTAION_HANDLER_SESSION_VAR] = Handler.new unless session[CONTINUTAION_HANDLER_SESSION_VAR]
+          @continuation_handler = session[CONTINUTAION_HANDLER_SESSION_VAR]
           @continuation_handler.set_current(self)
           @continuation_handler.pop(self)
         end
@@ -96,6 +110,7 @@ module Ardes
             state = @states.pop
             # restore state to controller, and save result
             controller.params = state.params
+            state.session.each {|k,v| controller.session[k] = v }
             @results[state.source.id] = Hash.new unless @results[state.source.id]
             @results[state.source.id][state.target.id] = state.result
           end
@@ -130,7 +145,7 @@ module Ardes
       end
 
       class State
-        attr_reader :result, :source, :target, :params
+        attr_reader :result, :source, :target, :params, :session
         
         def result=(result)
           @has_result = true
@@ -144,7 +159,11 @@ module Ardes
         def initialize(source, target, controller)
           @source = source
           @target = target
-          @params = controller.params
+          @params = controller.params.clone
+          @session = Hash.new
+          controller.continuation_session_vars.each do |v|
+            @session[v] = controller.session[v]
+          end
         end
       end    
 
@@ -168,10 +187,10 @@ module Ardes
         end
 
         def create_id
-          @action + ':' + @controller + (@params.size > 0 ? ':' + @params.to_json : '')
+          @controller + ':' + @action + (@params.size > 0 ? ':' + @params.to_json : '')
         end
 
-        def redirect_options()
+        def url_options
           {:controller => @controller, :action => @action, :params => @params}
         end
       end
