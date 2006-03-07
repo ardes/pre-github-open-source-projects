@@ -14,12 +14,13 @@ module Ardes
         end
       end
       
-      module InstanceMethods       
+      module InstanceMethods
       private
         def continuation_initialize
           session[:continuation_handler] = Handler.new unless session[:continuation_handler]
           @continuations = session[:continuation_handler]
           @continuations.set_current(self)
+          continuation_dispatcher { @continuations.pop(self) }
         end
 
         def continuation_dispatcher
@@ -33,14 +34,13 @@ module Ardes
         
         def continuation
           continuation_dispatcher do
-            @continuations.pop
             yield
             @continuations.cleanup
           end
         end
         
         def continuation_call(options)
-          @continuations.call(Page.new(options, self))
+          @continuations.call(Page.new(options, self), self)
         end
         
         def continuation_return(result, target = nil)
@@ -66,7 +66,7 @@ module Ardes
       class Handler
         attr_accessor :states, :results, :current
           
-        def initialize()
+        def initialize
           @states = Array.new
           @results = Hash.new
         end
@@ -75,11 +75,11 @@ module Ardes
           @current = Page.current(controller)
         end
         
-        def call(target)
+        def call(target, controller)
           catch :no_result do
             return result_for(target)
           end
-          @states.push(State.new(@current, target))
+          @states.push(State.new(@current, target, controller))
           throw :continuation_dispatch, target
         end
         
@@ -90,13 +90,17 @@ module Ardes
           end
         end
         
-        def pop
+        def pop(controller)
           if @states.last and @states.last.source.id == @current.id
             # check if we have a result, if not, dispatch to the target
             unless @states.last.has_result?
               throw :continuation_dispatch, @states.last.target
             end
-            save_result(@states.pop)
+            state = @states.pop
+            # restore state to controller, and save result
+            controller.params = state.params
+            @results[state.source.id] = Hash.new unless @results[state.source.id]
+            @results[state.source.id][state.target.id] = state.result
           end
         end
         
@@ -115,11 +119,6 @@ module Ardes
             throw :no_result
           end
         end
-    
-        def save_result(state)
-          @results[state.source.id] = Hash.new unless @results[state.source.id]
-          @results[state.source.id][state.target.id] = state.result
-        end
         
         def cleanup(to_clean = nil)
           if to_clean == :all
@@ -134,7 +133,7 @@ module Ardes
       end
       
       class State
-        attr_reader :result, :source, :target
+        attr_reader :result, :source, :target, :params
         
         def result=(result)
           @has_result = true
@@ -145,9 +144,10 @@ module Ardes
           @has_result
         end
         
-        def initialize(source, target)
+        def initialize(source, target, controller)
           @source = source
           @target = target
+          @params = controller.params
         end
       end    
 
