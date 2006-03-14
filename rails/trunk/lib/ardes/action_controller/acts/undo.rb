@@ -50,7 +50,7 @@ module Ardes# :nodoc:
             @undo_manager.redo(params[:id].nil? ? :first : params[:id])
             redirect_to_return params[:return_to]
           end
-        
+                  
         private
           def redirect_to_return(params)
             params = YAML.load(params)

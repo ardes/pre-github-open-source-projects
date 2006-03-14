@@ -21,6 +21,7 @@ module Ardes
       
       module InstanceMethods
         def self.included(base)
+          super
           base.send :alias_method, :perform_action_without_continuations, :perform_action
           base.send :alias_method, :perform_action, :perform_action_with_continuations
         end

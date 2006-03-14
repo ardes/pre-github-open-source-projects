@@ -53,6 +53,7 @@ module Ardes# :nodoc:
           acting_as_undoable.before_destroy self
           acting_as_undoable.after_save self
           acting_as_undoable.after_destroy self
+          
           @managed[acting_as_undoable.name] = acting_as_undoable
         end
         
