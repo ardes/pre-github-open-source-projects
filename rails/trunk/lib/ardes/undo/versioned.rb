@@ -117,25 +117,23 @@ module Ardes# :nodoc:
           return unless @capturing
           capture_undoable(r, @down[r.object_id], nil)
           @down.delete r.object_id
-         end
+        end
         
-       def start_undoable
-         unless @capturing
-           @down = Hash.new
-           @undoables = Array.new
-           @capturing = true
-         end
-       end
-
-       def end_undoable(*args)
-         @capturing = false
-         if @undoables.size > 0
-           @stack.delete_undone_items
-           push_undoables(*args)
-         else
-           Array.new
-         end
-       end
+        def start_undoable
+          @down = Hash.new
+          @undoables = Array.new
+          @capturing = true
+        end
+       
+        def end_undoable(*args)
+          @capturing = false
+          if @undoables.size > 0
+            @stack.delete_undone_items
+            push_undoables(*args)
+          else
+            Array.new
+          end
+        end
 
       protected
         def capture_undoable(record, down_version, up_version)
