@@ -4,6 +4,7 @@ module Ardes# :nodoc:
     
       def self.included(base)
         base.extend(ClassMethods)
+        base.send :include, InstanceMethods
       end
     
       module ClassMethods
@@ -20,7 +21,7 @@ module Ardes# :nodoc:
       end
       
       module InstanceMethods
-        def valid_for_attributes(attributes)
+        def valid_for_attributes(*attributes)
           unless self.valid?
             errors = self.errors
             our_errors = Array.new
