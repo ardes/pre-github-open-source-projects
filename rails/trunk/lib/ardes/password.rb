@@ -11,7 +11,7 @@ module Ardes
     def initialize
       @vowels = %w(a e i o u)
       @consonants = ('a'..'z').to_a - @vowels
-      @consonants.delete('l')
+      @consonants -= ['l', 'k', 'q', 'z', 'y', 'x']
     end
 
     def generate
@@ -33,12 +33,7 @@ module Ardes
     
     def generate_letter
       case (@last)
-        when VOWEL
-          case rand(10)
-            when 0..7:  random_consonant
-            when 8..9:  random_vowel
-          end
-        
+        when VOWEL: random_consonant
         when CONSONANT: random_vowel
       end
     end
