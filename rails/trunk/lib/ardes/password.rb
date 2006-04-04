@@ -9,10 +9,9 @@ module Ardes
     end
     
     def initialize
-      @vowels = %w(a e i o u y 3 4)
+      @vowels = %w(a e i o u)
       @consonants = ('a'..'z').to_a - @vowels
       @consonants.delete('l')
-      @consonants << '7' << '9' << '5'
     end
 
     def generate
@@ -40,11 +39,7 @@ module Ardes
             when 8..9:  random_vowel
           end
         
-        when CONSONANT
-          case rand(10)
-            when 0:     random_consonant
-            when 1..9:  random_vowel
-          end
+        when CONSONANT: random_vowel
       end
     end
     
