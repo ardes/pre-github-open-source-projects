@@ -1,6 +1,6 @@
 module Ardes# :nodoc:
   module ActiveRecord# :nodoc:
-    module Acts# :nodoc:
+    module Has# :nodoc:
       #
       # Specify this to have a unique handle associated with the model
       #
@@ -13,7 +13,7 @@ module Ardes# :nodoc:
         end
 
         module ClassMethods
-          def has_handle(column = 'handle')
+          def has_handle(column = :handle)
             include ActMethods
             self.class_eval do
               cattr_accessor :handle_column
@@ -23,7 +23,7 @@ module Ardes# :nodoc:
           end
           
           def validates_handle(*attributes)
-            attributes = ['handle'] if attributes.empty?
+            attributes = [:handle] if attributes.empty?
             attributes.each do |a|
               validates_presence_of a
               validates_uniqueness_of a
@@ -92,5 +92,5 @@ module Ardes# :nodoc:
   end
 end
 
-ActiveRecord::Base.class_eval { include Ardes::ActiveRecord::Acts::Handle }
+ActiveRecord::Base.class_eval { include Ardes::ActiveRecord::Has::Handle }
 

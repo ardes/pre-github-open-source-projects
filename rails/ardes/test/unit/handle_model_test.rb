@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/../test_helper'
-require 'test/active_record/acts/handle'
+require 'test/active_record/has/handle'
 require 'test/active_record/crud'
 
 class Ardes::TestCase::HandleModel < Test::Rails::TestCase
