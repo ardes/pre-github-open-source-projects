@@ -8,7 +8,6 @@ module Ardes# :nodoc:
       end
     
       module ClassMethods
-
         
         def validates_uk_phone(*attrs)
           attrs = [:phone] if attrs.empty?
@@ -27,11 +26,24 @@ module Ardes# :nodoc:
               :message => 'must be a valid email address'
           end
         end
+        
+        def validates_part(*attr_names)
+          configuration = {}
+          configuration.update(attr_names.pop) if attr_names.last.is_a?(Hash)
+
+          validates_each(attr_names, configuration) do |record, attr_name, value|
+            dup_value = value.dup
+            if !dup_value.valid?
+              dup_value.errors.each { |attr, msg| record.errors.add(attr_name, attr.to_s.humanize + " " + msg) }
+            end
+          end
+        end
       end
       
       module InstanceMethods
         # Checks validity on model, then pulls errors for the specified attributes
-        def valid_for_attributes(*attrs)
+        def valid_for_attributes?(*attrs)
+          attrs = attrs.collect {|attr| attr.to_s}
           unless self.valid?
             errors = self.errors
             our_errors = Array.new

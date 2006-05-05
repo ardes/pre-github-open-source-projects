@@ -6,7 +6,7 @@ module Ardes# :nodoc:
       #
       # This will
       #   - add a validation for the handle
-      #   - allow calls like find(:some_handle) and find([:some_handle, :other_handle])
+      #   - allow calls like find('some_handle') and find(['some_handle', 'other_handle'])
       module Handle
         def self.included(base)
           base.extend(ClassMethods)

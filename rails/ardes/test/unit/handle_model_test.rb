@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/../test_helper'
-require 'test/active_record/has/handle'
-require 'test/active_record/crud'
+require 'ardes/test/active_record/has/handle'
+require 'ardes/test/active_record/crud'
 
 class Ardes::TestCase::HandleModel < Test::Rails::TestCase
   fixtures :handle_models
