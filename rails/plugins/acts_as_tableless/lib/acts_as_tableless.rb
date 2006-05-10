@@ -7,12 +7,15 @@ module ActiveRecord# :nodoc:
       
       module ClassMethods
         #
-        # specify that this active record works without a table in the db
+        # Specify that this active record works without a table in the db
+        # Specifying columns uses the same syntax as for migrations
+        # 
         # usage:
-        #   acts_as_tableless col_name [, ...]
+        #   acts_as_tableless :my_col, :my_other_col
+        #
         #   acts_as_tableless do
-        #     column name, type, options
-        #     ...
+        #     column :my_col, :integer, :null => false
+        #     column :my_other_col, :string, :default => 'hello!', :null => true
         #   end
         def acts_as_tableless(*columns)
           include ActMethods
@@ -34,14 +37,13 @@ module ActiveRecord# :nodoc:
             @columns ||= []
           end
           
-          # same method signature as in migrations
           def column(name, type = nil, options = {})
             columns << Column.new(name.to_s, type, options)
           end
         end
       end
       
-      class Column < ::ActiveRecord::ConnectionAdapters::Column
+      class Column < ActiveRecord::ConnectionAdapters::Column
         def initialize(name, type = nil, options = {})
           @name    = name
           @type    = type
