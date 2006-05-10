@@ -73,11 +73,6 @@ module ActiveRecord# :nodoc:
 
         def to_param
           @handle
-          #unless new_record?
-          #  @handle or @handle = self.connection.select_value(
-          #    "SELECT #{self.handle_colum} FROM #{self.class.table_name} " +
-          #    "WHERE #{self.class.primary_key} = #{send(self.class.priumary_key)}")
-          #end
         end
                 
         module ClassMethods
@@ -88,17 +83,6 @@ module ActiveRecord# :nodoc:
           def instantiate_with_handle(*args)
             result = instantiate_without_handle(*args)
             result.cache_handle
-            result
-          end
-          
-          def find_with_handle(*args)
-            if result = find_without_handle(*args)
-              if result.respond_to? :each 
-                result.each {|r| r.cache_handle}
-              elsif result.is_a? self
-                result.cache_handle
-              end
-            end
             result
           end
           
