@@ -59,22 +59,36 @@ module ActiveRecord# :nodoc:
           base.class_eval do
             class <<self
               include ClassMethods
+              alias_method_chain :find, :handle
               alias_method_chain :find_one, :handle
               alias_method_chain :find_some, :handle
             end
+            after_save :cache_handle
           end
+        end
+
+        def to_param
+          unless new_record?
+            @handle_param or @handle_param = self.connection.select_value(
+              "SELECT #{self.handle_colum} FROM #{self.class.table_name} ".
+              "WHERE #{self.class.primary_key} = #{send(self.class.priumary_key)}")
+          end
+        end
+        
+        def cache_handle
+          @handle_param = result.send(self.handle_column)
         end
 
         module ClassMethods
 
-          def to_param
-            unless new_record?
-              self.connection.select_value("SELECT #{self.handle_colum} FROM #{self.class.table_name} WHERE #{self.class.primary_key} = #{send(self.class.priumary_key)}")
-            end
-          end
-
           def id_is_handle?(id)
             id.is_a? String and not id =~ /^\d*$/
+          end
+          
+          def find_with_handle(*args)
+            result = find_without_handle(*args)
+            result.cache_handle
+            result
           end
           
           def find_one_with_handle(id, options)
