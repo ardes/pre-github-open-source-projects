@@ -86,8 +86,9 @@ module ActiveRecord# :nodoc:
           end
           
           def find_with_handle(*args)
-            result = find_without_handle(*args)
-            result.cache_handle
+            if result = find_without_handle(*args)
+              result.cache_handle
+            end
             result
           end
           
