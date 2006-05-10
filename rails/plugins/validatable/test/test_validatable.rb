@@ -8,11 +8,12 @@ module TestValidatable
   end
   
   module ClassMethods
-    def test_validatable(target_class, attrs = [])
+    def test_validatable(target_class, valid_attrs, invalid_attrs)
       include InstanceMethods
-      cattr_accessor :test_validatable_class, :test_validatable_attrs
-      self.test_validatable_class = target_class
-      self.test_validatable_attrs = attrs
+      cattr_accessor :test_validatable_class, :test_validatable_valid_attrs, :test_validatable_invalid_attrs
+      self.test_validatable_class         = target_class
+      self.test_validatable_valid_attrs   = valid_attrs
+      self.test_validatable_invalid_attrs = invalid_attrs
     end
   end
   
@@ -24,7 +25,7 @@ module TestValidatable
     
     def test_validatable_method_missing_should_respond_to_before_type_cast
       obj = self.test_validatable_class.new
-      self.test_validatable_attrs.each do |a,v|
+      self.test_validatable_valid_attrs.each do |a,v|
         obj.send(a.to_s + "=",v)
         assert_equal obj.send(a), obj.send(a.to_s + "_before_type_cast")
       end
@@ -44,10 +45,22 @@ module TestValidatable
     def test_validatable_index
       obj = self.test_validatable_class.new
       
-      self.test_validatable_attrs.each do |a,v|
+      self.test_validatable_valid_attrs.each do |a,v|
         obj.send(a.to_s + "=", v)
         assert_equal v, obj[a]
       end
+    end
+    
+    def test_validatable_should_validate_object_with_valid_attributes
+      obj = self.test_validatable_class.new
+      self.test_validatable_valid_attrs.each {|a,v| obj.send(a.to_s + "=",v)}
+      assert obj.valid?
+    end
+
+    def test_validatable_should_not_validate_object_with_invalid_attributes
+      obj = self.test_validatable_class.new
+      self.test_validatable_invalid_attrs.each {|a,v| obj.send(a.to_s + "=",v)}
+      assert(!obj.valid?)
     end
   end
 end
