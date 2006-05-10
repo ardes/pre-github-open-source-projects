@@ -70,7 +70,7 @@ module ActiveRecord# :nodoc:
         def to_param
           unless new_record?
             @handle_param or @handle_param = self.connection.select_value(
-              "SELECT #{self.handle_colum} FROM #{self.class.table_name} ".
+              "SELECT #{self.handle_colum} FROM #{self.class.table_name} " +
               "WHERE #{self.class.primary_key} = #{send(self.class.priumary_key)}")
           end
         end
