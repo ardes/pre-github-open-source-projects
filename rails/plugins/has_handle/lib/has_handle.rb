@@ -68,12 +68,13 @@ module ActiveRecord# :nodoc:
         end
         
         def initialize_with_handle(*args)
-          initialize_without_handle(*args)
+          result = initialize_without_handle(*args)
           cache_handle unless new_record?
+          result
         end
 
         def cache_handle
-          @handle = result.send(self.handle_column)
+          @handle = send(self.handle_column)
         end
 
         def to_param
