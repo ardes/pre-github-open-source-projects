@@ -38,8 +38,8 @@ module ActiveRecord# :nodoc:
             cattr_accessor :handle_column
             self.handle_column = column.to_s
             validates_handle self.handle_column unless options[:validate] == false
-          end
-          include ActMethods
+            include ActMethods
+           end
         end
         
         def validates_handle(*attributes)
@@ -61,18 +61,12 @@ module ActiveRecord# :nodoc:
               include ClassMethods
               alias_method_chain :find_one, :handle
               alias_method_chain :find_some, :handle
+              alias_method_chain :instantiate, :handle
             end
-            alias_method_chain :initialize, :handle
             after_save :cache_handle
           end
         end
         
-        def initialize_with_handle(*args)
-          result = initialize_without_handle(*args)
-          cache_handle unless new_record?
-          result
-        end
-
         def cache_handle
           @handle = send(self.handle_column)
         end
@@ -89,6 +83,12 @@ module ActiveRecord# :nodoc:
         module ClassMethods
           def id_is_handle?(id)
             id.is_a? String and not id =~ /^\d*$/
+          end
+          
+          def instantiate_with_handle(*args)
+            result = instantiate_without_handle(*args)
+            result.cache_handle
+            result
           end
           
           def find_with_handle(*args)
