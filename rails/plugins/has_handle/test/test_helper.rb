@@ -5,18 +5,16 @@ require 'test_help'
 
 load(File.dirname(__FILE__) + "/schema.rb")
 
-Test::Unit::TestCase.fixture_path = File.dirname(__FILE__) + "/fixtures/"
-$LOAD_PATH.unshift(Test::Unit::TestCase.fixture_path)
-
-class Test::Unit::TestCase #:nodoc:
-  def create_fixtures(*table_names)
-    if block_given?
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names) { yield }
-    else
-      Fixtures.create_fixtures(Test::Unit::TestCase.fixture_path, table_names)
-    end
-  end
-  
+class Test::Unit::TestCase
   self.use_transactional_fixtures = true
   self.use_instantiated_fixtures  = false
+  self.fixture_path = File.dirname(__FILE__) + "/fixtures/"
+  
+#  def create_fixtures(*table_names)
+#    if block_given?
+#      Fixtures.create_fixtures(self.fixture_path, table_names) { yield }
+#    else
+#      Fixtures.create_fixtures(self.fixture_path, table_names)
+#    end
+#  end
 end

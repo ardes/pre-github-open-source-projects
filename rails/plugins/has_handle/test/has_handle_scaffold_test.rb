@@ -43,9 +43,9 @@ class HasHandleScaffoldTest < Test::Unit::TestCase
   end
   
   def test_should_preserve_original_handle_in_param_when_updated_with_invalid_handle
-    post :update, {:id => '1', :test_has_handle_model => {:handle => 'fi rst'}}
+    post :update, {:id => '1', :test_has_handle_model => {:handle => 'mal for med'}}
     assert_tag :tag => 'div', :attributes => {:class => 'errorExplanation'} # error
-    assert_tag :tag => 'input', :attributes => {:value => 'fi rst'} # malformed handle field
+    assert_tag :tag => 'input', :attributes => {:value => 'mal for med'} # malformed handle field
     assert_tag :tag => 'a', :attributes => {:href => /\/show\/first/} # preserved handle in to_param
   end
 end
