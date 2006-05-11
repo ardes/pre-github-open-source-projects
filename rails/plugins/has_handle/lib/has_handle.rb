@@ -10,7 +10,7 @@ module ActiveRecord# :nodoc:
     # This will
     #   - add a validation for the handle
     #   - allow calls like find('some_handle') and find(['some_handle', 'other_handle'])
-    #   - works with scaffolding out of the box for more informative urls (people/fred_jones)
+    #   - works with controllers (and scaffolding) out of the box for more informative urls (people/fred_jones)
     # 
     # Example of use:
     #   class MyObject < ActiveRecord::Base
