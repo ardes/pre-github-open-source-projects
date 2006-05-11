@@ -1,10 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 require File.dirname(__FILE__) + '/test_has_handle'
+require File.dirname(__FILE__) + '/test_has_handle_model.rb'
 begin; require 'test_crud'; rescue MissingSourceFile; end
-
-class TestHasHandleModel < ActiveRecord::Base
-  has_handle
-end
 
 class HasHandleTest < Test::Unit::TestCase
   fixtures :test_has_handle_models

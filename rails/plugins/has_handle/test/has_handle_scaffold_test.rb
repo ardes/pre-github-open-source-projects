@@ -1,8 +1,5 @@
 require File.dirname(__FILE__) + '/test_helper'
-
-class TestHasHandleModel < ActiveRecord::Base
-  has_handle
-end
+require File.dirname(__FILE__) + '/test_has_handle_model.rb'
 
 class HasHandleScaffoldController < ActionController::Base
   scaffold :test_has_handle_model
