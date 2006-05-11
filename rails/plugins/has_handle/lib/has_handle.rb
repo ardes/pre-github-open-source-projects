@@ -18,7 +18,7 @@ module ActiveRecord# :nodoc:
     #   end
     #
     #   class MyObject < ActiveRecord::Base
-    #     has_handle :name_of_entity
+    #     has_handle :name_of_handle_column
     #   end
     #
     #   class MyObject < ActiveRecord::Base
