@@ -1,0 +1,7 @@
+first:
+  id: 1
+  other: first
+  
+second:
+  id: 2
+  other: second
