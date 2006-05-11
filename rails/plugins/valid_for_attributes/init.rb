@@ -1,0 +1,1 @@
+require 'valid_for_attributes'
