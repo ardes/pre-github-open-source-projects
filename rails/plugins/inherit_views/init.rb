@@ -1,0 +1,1 @@
+require 'inherit_views.rb'
