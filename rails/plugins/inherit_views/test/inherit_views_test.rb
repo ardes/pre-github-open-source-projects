@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/test_helper'
 
 class InheritViewsController < ActionController::Base
   inherit_views :first, :second
-  self.template_root = File.dirname(__FILE__) + '/fixtures/views'
+  self.template_root = File.dirname(__FILE__) + '/views'
   
   def default; end
     
