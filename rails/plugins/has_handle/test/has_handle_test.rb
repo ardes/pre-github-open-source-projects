@@ -1,27 +1,27 @@
 require File.dirname(__FILE__) + '/test_helper'
 require File.dirname(__FILE__) + '/test_has_handle'
-require File.dirname(__FILE__) + '/test_has_handle_model.rb'
+require File.dirname(__FILE__) + '/has_handle_test_model.rb'
 begin; require 'test_crud'; rescue MissingSourceFile; end
 
 class HasHandleTest < Test::Unit::TestCase
-  fixtures :test_has_handle_models
-  test_has_handle TestHasHandleModel
+  fixtures :has_handle_test_models
+  test_has_handle HasHandleTestModel
   
   if defined?(Test::Abstract::Crud)
-    test_crud TestHasHandleModel, :first, {:handle => 'third'}
+    test_crud HasHandleTestModel, :first, {:handle => 'third'}
   end
 end
 
 #-----
-class TestHasHandleOtherColumnModel < ActiveRecord::Base
+class HasHandleOtherColumnTestModel < ActiveRecord::Base
   has_handle :other
 end
 
 class HasHandleTestOtherColumn < Test::Unit::TestCase
-  fixtures :test_has_handle_other_column_models
-  test_has_handle TestHasHandleOtherColumnModel
+  fixtures :has_handle_other_column_test_models
+  test_has_handle HasHandleOtherColumnTestModel
   
   if defined?(Test::Abstract::Crud)
-    test_crud TestHasHandleOtherColumnModel, :first, {:other => 'third'}
+    test_crud HasHandleOtherColumnTestModel, :first, {:other => 'third'}
   end
 end

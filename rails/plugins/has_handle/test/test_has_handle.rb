@@ -85,9 +85,28 @@ module Test
           assert self.has_handle_class.find(:first)
           assert(!self.has_handle_class.find(:first, :conditions => ["'handle' = ?", 'not_there']))
         end
+        
+        def test_has_handle_should_be_existing_with_handle
+          assert self.has_handle_class.exists?('first')
+        end
+        
+        def test_has_handle_should_be_existing_with_id
+          assert self.has_handle_class.exists?(1)
+        end
+        
+        def test_has_handle_should_be_existing_with_string_but_numeric_id
+          assert self.has_handle_class.exists?("1")
+        end
+        
+        def test_has_handle_should_not_be_existing_with_non_existent_handle
+          assert(!self.has_handle_class.exists?('not_there'))
+        end
+        
+        def test_has_handle_should_not_be_existing_with_non_existent_id
+          assert(!self.has_handle_class.exists?(666))
+        end
       end
     end
   end
 end
 
-Test::Unit::TestCase.class_eval { include Test::Abstract::HasHandle }

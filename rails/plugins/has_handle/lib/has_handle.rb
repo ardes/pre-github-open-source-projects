@@ -8,8 +8,10 @@ module ActiveRecord::Has# :nodoc:
   #
   # This will
   #   - add a validation for the handle
-  #   - allow calls like find('some_handle') and find(['some_handle', 'other_handle'])
+  #   - allow calls like exists('some handle'), find('some_handle') and find(['some_handle', 'other_handle'])
   #   - works with controllers (and scaffolding) out of the box for more informative urls (people/fred_jones)
+  #     because a handle may be in flux (an id can't) the authoritatve handle is cached.  A
+  #     call to 'to_param' will reveal the authoritative handle (the record in the db's handle)
   # 
   # Example of use:
   #   class MyObject < ActiveRecord::Base
@@ -21,7 +23,7 @@ module ActiveRecord::Has# :nodoc:
   #   end
   #
   #   class MyObject < ActiveRecord::Base
-  #     has_handle :validate => false
+  #     has_handle :validate => false   # if you want to provide custom validation
   #   end
   #
   module Handle
@@ -61,6 +63,7 @@ module ActiveRecord::Has# :nodoc:
             alias_method_chain :find_one, :handle
             alias_method_chain :find_some, :handle
             alias_method_chain :instantiate, :handle
+            alias_method_chain :exists?, :handle?
           end
           after_save :cache_handle
         end
@@ -86,36 +89,36 @@ module ActiveRecord::Has# :nodoc:
         end
         
         def find_one_with_handle(id, options)
-          if id_is_handle?(id)
-            conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
-            options.update :conditions => "#{table_name}.#{handle_column} = #{quote(id,columns_hash[handle_column])}#{conditions}"
+          return find_one_without_handle(id, options) unless id_is_handle?(id)
+          
+          conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
+          options.update :conditions => "#{table_name}.#{handle_column} = #{quote(id,columns_hash[handle_column])}#{conditions}"
 
-            if result = find_initial(options)
-              result
-            else
-              raise ::ActiveRecord::RecordNotFound, "Couldn't find #{name} with #{handle_column.upcase}=#{id}#{conditions}"
-            end
+          if result = find_initial(options)
+            result
           else
-            find_one_without_handle(id, options)
+            raise ::ActiveRecord::RecordNotFound, "Couldn't find #{name} with #{handle_column.upcase}=#{id}#{conditions}"
           end
         end
 
         def find_some_with_handle(ids, options)
-          if id_is_handle?(ids.first)
-            conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
-            ids_list   = ids.map { |id| quote(id,columns_hash[handle_column]) }.join(',')
-            options.update :conditions => "#{table_name}.#{handle_column} IN (#{ids_list})#{conditions}"
+          return find_some_without_handle(ids, options) unless id_is_handle?(ids.first)
+          
+          conditions = " AND (#{sanitize_sql(options[:conditions])})" if options[:conditions]
+          ids_list   = ids.map { |id| quote(id,columns_hash[handle_column]) }.join(',')
+          options.update :conditions => "#{table_name}.#{handle_column} IN (#{ids_list})#{conditions}"
 
-            result = find_every(options)
-
-            if result.size == ids.size
-              result
-            else
-              raise ::ActiveRecord::RecordNotFound, "Couldn't find all #{name.pluralize} with #{handle_column.upcase}s (#{ids_list})#{conditions}"
-            end
+          result = find_every(options)
+          if result.size == ids.size
+            result
           else
-            find_some_without_handle(ids, options)
+            raise ::ActiveRecord::RecordNotFound, "Couldn't find all #{name.pluralize} with #{handle_column.upcase}s (#{ids_list})#{conditions}"
           end
+        end
+        
+        def exists_with_handle?(id)
+          return exists_without_handle?(id) unless id_is_handle?(id)
+          !find(:first, :conditions => ["#{handle_column} = ?", id]).nil? rescue false
         end
       end
     end
