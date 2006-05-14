@@ -44,12 +44,12 @@ class InheritViewsTest < Test::Unit::TestCase
     assert_response :success
   end
   
-  def test_view_is_fetched_from_default_if_it_exists
+  def test_view_is_fetched_from_default_if_it_exists_in_all
     get :in_all
     assert_tag :tag => 'default'
   end
   
-  def test_view_is_fetched_from_first_if_it_exists
+  def test_view_is_fetched_from_first_if_it_exists_in_first_and_second
     get :in_first_and_second
     assert_tag :tag => 'first'
   end

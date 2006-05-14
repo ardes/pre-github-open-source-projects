@@ -4,10 +4,10 @@ class UkPostcode < ActiveRecord::Base
   acts_as_tableless do
     column :code, :string, :limit => 8, :default => '', :null => false
   end
-  
+
   attr_reader :code
   
-  validates_format_of :code,
+  validates_format_of :code, :if => :code,
     :with => /^(
         [A-PR-UWYZ]\d\d?\s\d[ABD-HJLNP-UW-Z]{2}
       | [A-PR-UWYZ][A-HK-Y]\d\d?\s\d[ABD-HJLNP-UW-Z]{2}
@@ -17,24 +17,42 @@ class UkPostcode < ActiveRecord::Base
     :message => 'must be a valid UK postcode (not post office or overseas territories)'
   
   def initialize(code)
-    @code = code.to_s.strip.split(" ").join(" ").upcase
+    @code = code.to_s.strip.split(" ").join(" ").upcase unless code.nil? 
   end
   
-  def outcode; @outcode or @outcode = @code.split(' ').first; end
+  def outcode
+    @outcode or @outcode = @code.split(' ').first unless @code.nil?
+  end
   
-  def incode; @incode or @incode = @code.split(' ').last; end
+  def incode
+    @incode or @incode = @code.split(' ').last unless @code.nil?
+  end
   
-  def area; @area or @area = self.outcode.gsub(/\d\d?[A-Z]?$/, ''); end
+  def area
+    @area or @area = self.outcode.gsub(/\d\d?[A-Z]?$/, '') unless @code.nil?
+  end
   
-  def district; @district or @district = self.outcode.gsub(/^[A-Z][A-Z]?/, ''); end
+  def district
+    @district or @district = self.outcode.gsub(/^[A-Z][A-Z]?/, '') unless @code.nil?
+  end
   
-  def sector; @sector or @sector = self.incode.slice(0..0); end
+  def sector
+    @sector or @sector = self.incode.slice(0..0) unless @code.nil?
+  end
   
-  def unit; @unit or @unit = self.incode.slice(1..2); end
+  def unit
+    @unit or @unit = self.incode.slice(1..2) unless @code.nil?
+  end
   
-  def to_s; @code; end
+  def to_s
+    @code.to_s
+  end
   
   def ==(other_postcode)
     @code == other_postcode.code
+  end
+  
+  def empty?
+    @code.nil?
   end
 end

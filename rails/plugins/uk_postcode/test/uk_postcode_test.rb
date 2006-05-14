@@ -18,11 +18,11 @@ class UKPostcodeTest < Test::Unit::TestCase
     assert_equal 'S11 8BH', UkPostcode.new('S11 8BH').to_s
   end
   
-  def test_should_split_S11_8BH_into_area_district_sector_unit
+  def test_should_split_S11_8BH_into_area_S_district_11_sector_8_unit_BH
     assert_uk_postcode_parts(UkPostcode.new('S11 8BH'), 'S', '11', '8', 'BH')
   end
   
-  def test_should_split_SW1A_2AA_into_area_district_sector_unit
+  def test_should_split_SW1A_2AA_into_area_SW_district_1A_sector_2_unit_AA
     assert_uk_postcode_parts(UkPostcode.new('SW1A 2AA'), 'SW', '1A', '2', 'AA')
   end
   
@@ -48,7 +48,7 @@ class UKPostcodeTest < Test::Unit::TestCase
     CSV::Reader.parse(postcodes) do |row|
       postcode = UkPostcode.new("#{row[0]} 1AA")
       assert postcode.valid?, "Postcode: #{row[0]} 1AA did not validate"
-      assert row[0], postcode.area + postcode.district
+      assert_equal row[0], postcode.area + postcode.district
     end
   end
   

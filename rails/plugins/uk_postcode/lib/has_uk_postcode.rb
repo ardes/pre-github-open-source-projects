@@ -3,11 +3,13 @@ module ActiveRecord# :nodoc:
     module UkPostcode
       def has_uk_postcode(*attrs)
         require 'uk_postcode'
-        attrs = [:postcode] if attrs.empty?
+        config = attrs.last.is_a?(Hash) ? attrs.pop : {}
+        attrs = [:postcode] if attrs.size == 0
         self.class_eval do
           attrs.each do |attr|
             composed_of attr, :class_name => 'UkPostcode', :mapping => [attr, :code]
-            validates_part attr
+            validates_part attr, :if => attr
+            validates_presence_of attr if config[:required]
           end
         end
       end
@@ -16,4 +18,3 @@ module ActiveRecord# :nodoc:
 end
 
 ActiveRecord::Base.class_eval { extend ActiveRecord::Has::UkPostcode }
-
