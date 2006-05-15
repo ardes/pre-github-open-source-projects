@@ -6,7 +6,7 @@ module Test
       end
 
       module ClassMethods
-        # Assumes that there is a valid data in the first row of the table
+        # Assumes that there is a valid data in the table
         def test_has_uk_postcode(target_class, *attrs)
           include InstanceMethods
           self.class_eval do
@@ -18,6 +18,14 @@ module Test
       end
 
       module InstanceMethods
+        def test_has_uk_postcode_should_have_data_expected_in_fixtures
+          [:first, :second].each do |fixture|
+            obj = HasUkPostcodeTestModel.find(has_uk_postcode_test_models(fixture)[:id])
+            assert_equal UkPostcode.new(has_uk_postcode_test_models(fixture)[:postcode]), obj.postcode
+            assert_equal UkPostcode.new(has_uk_postcode_test_models(fixture)[:postcode2]), obj.postcode2
+          end
+        end
+
         def test_has_uk_postcode_should_read_postcodes_as_value_objects
           obj = self.has_uk_postcode_class.find_first
           self.has_uk_postcode_attrs.each do |attr|
