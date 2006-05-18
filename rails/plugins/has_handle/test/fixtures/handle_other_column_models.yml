@@ -5,3 +5,7 @@ first:
 second:
   id: 2
   other: second
+  
+six_hundred_and_66:
+  id: 666
+  other: six_hundred_and_66

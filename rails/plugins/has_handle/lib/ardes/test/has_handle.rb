@@ -6,12 +6,16 @@ module Ardes# :nodoc:
       end
 
       module ClassMethods
-        # Assumes that there are two records with id,handle => {1, 'first'}, {2, 'second'}
-        def test_has_handle(target_class)
+        # example:
+        #   class MyTestCase < Test::Unit::TestCase
+        #     test_has_handle MyClass, [1, :first_handle], [2, :second_handle]
+        def test_has_handle(target_class, *id_handle_pairs)
           include InstanceMethods
+          raise(ArgumentError, "At least one |id, handle| pair is required") unless id_handle_pairs.size > 0
           self.class_eval do
-            cattr_accessor :has_handle_class
+            cattr_accessor :has_handle_class, :has_handle_id_handle_pairs
             self.has_handle_class = target_class
+            self.has_handle_id_handle_pairs = id_handle_pairs
           end
         end
       end
@@ -23,7 +27,7 @@ module Ardes# :nodoc:
           obj.send(obj.handle_column.to_s + "=", handle) if handle
           obj
         end
-
+        
         def test_has_handle_should_be_valid_with_handle_containing_only_lowercase_alphanumeric_and_underscores
           assert new_has_handle_object('h4n_dle').valid?
         end
@@ -45,7 +49,9 @@ module Ardes# :nodoc:
         end
 
         def test_has_handle_should_be_invalid_if_duplicate
-          assert(!new_has_handle_object('first').valid?)
+          self.has_handle_id_handle_pairs.each do |id, handle|
+            assert(!new_has_handle_object(handle).valid?)
+          end
         end
 
         def test_has_handle_should_be_invalid_if_nil
@@ -53,57 +59,81 @@ module Ardes# :nodoc:
         end
 
         def test_has_handle_should_be_findable_with_handle
-          first = self.has_handle_class.find('first')
-          assert_equal 1, first.id
+          self.has_handle_id_handle_pairs.each do |id, handle|
+            obj = self.has_handle_class.find(handle)
+            assert_equal id, obj.id
+          end
         end
 
         def test_has_handle_should_be_findable_with_handle_array
-          objs = self.has_handle_class.find(['first', 'second'])
-          assert_equal 2, objs.size
+          handles = self.has_handle_id_handle_pairs.collect {|pair| pair.last}
+          objs = self.has_handle_class.find(handles)
+          assert_equal handles.size, objs.size
         end
 
         def test_has_handle_should_be_findable_with_string_but_numeric_id
-          first = self.has_handle_class.find("1")
-          assert_equal 1, first.id
+          self.has_handle_id_handle_pairs.each do |id, handle|
+            obj = self.has_handle_class.find(id.to_s)
+            assert_equal id, obj.id
+          end
         end
 
         def test_has_handle_should_ensure_that_find_works_with_handle_and_conditions
-          first = self.has_handle_class.find('first', :conditions => ["id = ?", 1])
-          assert_equal 1, first.id
-          assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find('first', :conditions => ["id = ?", 2]) }
+          self.has_handle_id_handle_pairs.each do |id, handle|
+            obj = self.has_handle_class.find(handle, :conditions => ["id = ?", id])
+            assert_equal id, obj.id
+            # now use the same handle but a diffrent id
+            assert_raise(::ActiveRecord::RecordNotFound) do
+              self.has_handle_class.find(handle, :conditions => ["id = ?", id + 1])
+            end
+          end
         end
 
         def test_has_handle_should_ensure_that_find_throws_record_not_found_with_bad_handle
-          assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find('not_there') }
+          self.has_handle_id_handle_pairs.each do |id, handle|
+            # find a record with handle and delete it
+            assert self.has_handle_class.find(handle).destroy
+            # find it again, should raise error
+            assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find(handle) }
+          end
         end
 
         def test_has_handle_should_ensure_find_works_as_it_normally_should
-          first = self.has_handle_class.find(1)
-          assert_equal 1, first.id
-          assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find(1, :conditions => ["'handle' = ?", 'not_there']) }
-          assert self.has_handle_class.find(:all).size >= 1
-          assert self.has_handle_class.find(:first)
-          assert(!self.has_handle_class.find(:first, :conditions => ["'handle' = ?", 'not_there']))
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          obj = self.has_handle_class.find(id)
+          assert_equal id, obj.id
+          assert self.has_handle_class.find(id).destroy
+          assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find(id) }
+          assert self.has_handle_class.find(:all).size == self.has_handle_id_handle_pairs.size - 1
+          assert self.has_handle_class.find(:first) unless self.has_handle_id_handle_pairs.size == 1
+          assert(!self.has_handle_class.find(:first, :conditions => ["'handle' = ?", handle]))
         end
         
         def test_has_handle_should_be_existing_with_handle
-          assert self.has_handle_class.exists?('first')
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          assert self.has_handle_class.exists?(handle)
         end
         
         def test_has_handle_should_be_existing_with_id
-          assert self.has_handle_class.exists?(1)
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          assert self.has_handle_class.exists?(id)
         end
         
         def test_has_handle_should_be_existing_with_string_but_numeric_id
-          assert self.has_handle_class.exists?("1")
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          assert self.has_handle_class.exists?(id.to_s)
         end
         
         def test_has_handle_should_not_be_existing_with_non_existent_handle
-          assert(!self.has_handle_class.exists?('not_there'))
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          assert self.has_handle_class.find(id).destroy
+          assert(!self.has_handle_class.exists?(handle))
         end
         
         def test_has_handle_should_not_be_existing_with_non_existent_id
-          assert(!self.has_handle_class.exists?(666))
+          (id, handle) = self.has_handle_id_handle_pairs.first
+          assert self.has_handle_class.find(id).destroy
+          assert(!self.has_handle_class.exists?(id))
         end
       end
     end
