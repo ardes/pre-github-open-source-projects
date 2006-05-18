@@ -1,21 +1,3 @@
-module ActionController::InheritViews
-  def self.included(base)
-    base.class_eval do
-      cattr_accessor :inherit_views_from
-      extend ClassMethods
-    end
-  end
-  
-  module ClassMethods
-    # specify this to have your controller inherit its view from the specified controllers
-    def inherit_views(*controllers)
-      self.inherit_views_from = controllers
-    end
-  end
-end
-
-ActionController::Base.class_eval { include ActionController::InheritViews }
-
 class ActionView::Base
 private
   def full_template_path(template_path, extension)
