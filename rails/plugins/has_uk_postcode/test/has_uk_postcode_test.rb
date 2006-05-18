@@ -41,7 +41,6 @@ class HasUkPostcodeTest < Test::Unit::TestCase
   
   def test_should_be_valid_with_S11_8BH_and_NULL_because_of_model_defenition
     @obj.postcode  = Ardes::UkPostcode.new('S11 8BH')
-    @obj.postcode2 = nil
     assert(@obj.valid?)
   end
   

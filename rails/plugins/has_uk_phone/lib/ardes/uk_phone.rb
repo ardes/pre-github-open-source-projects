@@ -12,7 +12,7 @@ module Ardes
       :message => 'must be a valid UK phone number'
   
     def initialize(number)
-      @number = number.to_s.strip.gsub(/[\(\)]/, '').split(" ").join(" ") unless number.nil? 
+      @number = number.to_s.strip.gsub(/[\(\)]/, '').split(" ").join(" ")
     end
 
     def to_s
@@ -24,11 +24,11 @@ module Ardes
     end
   
     def canonical
-      @number.gsub(' ', '').gsub('+44', '0') unless @number.nil?
+      @number.gsub(' ', '').gsub('+44', '0')
     end
   
     def empty?
-      @number.nil?
+      @number == ''
     end
   end
 end

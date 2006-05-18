@@ -40,7 +40,6 @@ class HasUkPhoneTest < Test::Unit::TestCase
   
   def test_should_be_valid_with_valid_phone_and_NULL_because_of_model_defenition
     @obj.phone  = Ardes::UkPhone.new('+44 1142229988')
-    @obj.phone2 = nil
     assert(@obj.valid?)
   end
   
