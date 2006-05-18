@@ -1,5 +1,5 @@
-module Test
-  module Abstract
+module Ardes# :nodoc:
+  module Test# :nodoc:
     module HasHandle
       def self.included(base)
         base.extend(ClassMethods)
@@ -110,3 +110,4 @@ module Test
   end
 end
 
+Test::Unit::TestCase.class_eval { include Ardes::Test::HasHandle }

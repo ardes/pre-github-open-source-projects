@@ -1,27 +1,23 @@
 require File.dirname(__FILE__) + '/test_helper'
-require File.dirname(__FILE__) + '/test_has_handle'
-require File.dirname(__FILE__) + '/has_handle_test_model.rb'
-begin; require 'test_crud'; rescue MissingSourceFile; end
+require 'ardes/test/has_handle'
+begin; require 'ardes/test/crud'; rescue MissingSourceFile; end
 
+require File.dirname(__FILE__) + '/fixtures/handle_model'
 class HasHandleTest < Test::Unit::TestCase
-  fixtures :has_handle_test_models
-  test_has_handle HasHandleTestModel
+  fixtures :handle_models
+  test_has_handle HandleModel
   
-  if defined?(Test::Abstract::Crud)
-    test_crud HasHandleTestModel, :first, {:handle => 'third'}
+  if defined?(Ardes::Test::Crud)
+    test_crud HandleModel, :first, {:handle => 'third'}
   end
 end
 
-#-----
-class HasHandleOtherColumnTestModel < ActiveRecord::Base
-  has_handle :other
-end
-
+require File.dirname(__FILE__) + '/fixtures/handle_other_column_model'
 class HasHandleTestOtherColumn < Test::Unit::TestCase
-  fixtures :has_handle_other_column_test_models
-  test_has_handle HasHandleOtherColumnTestModel
+  fixtures :handle_other_column_models
+  test_has_handle HandleOtherColumnModel
   
-  if defined?(Test::Abstract::Crud)
-    test_crud HasHandleOtherColumnTestModel, :first, {:other => 'third'}
+  if defined?(Ardes::Test::Crud)
+    test_crud HandleOtherColumnModel, :first, {:other => 'third'}
   end
 end

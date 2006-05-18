@@ -1,12 +1,13 @@
 require File.dirname(__FILE__) + '/test_helper'
-require File.dirname(__FILE__) + '/has_handle_test_model.rb'
+
+require File.dirname(__FILE__) + '/fixtures/handle_model'
 
 class HasHandleScaffoldController < ActionController::Base
-  scaffold :has_handle_test_model
+  scaffold :handle_model
 end
 
 class HasHandleScaffoldTest < Test::Unit::TestCase
-  fixtures :has_handle_test_models
+  fixtures :handle_models
   
   def setup
     @controller = HasHandleScaffoldController.new
@@ -43,7 +44,7 @@ class HasHandleScaffoldTest < Test::Unit::TestCase
   end
   
   def test_should_preserve_original_handle_in_param_when_updated_with_invalid_handle
-    post :update, {:id => '1', :has_handle_test_model => {:handle => 'mal for med'}}
+    post :update, {:id => '1', :handle_model => {:handle => 'mal for med'}}
     assert_tag :tag => 'div', :attributes => {:class => 'errorExplanation'} # error
     assert_tag :tag => 'input', :attributes => {:value => 'mal for med'} # malformed handle field
     assert_tag :tag => 'a', :attributes => {:href => /\/show\/first/} # preserved handle in to_param
