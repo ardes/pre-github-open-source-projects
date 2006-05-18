@@ -1,0 +1,9 @@
+first:
+  id: 1
+  email: "ian@ardes.com"
+  email2: NULL
+  
+second:
+  id: 2
+  email: "ian.w.white@gmail.com"
+  email2: "ray@ardes.com"
