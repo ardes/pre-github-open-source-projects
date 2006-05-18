@@ -1,12 +1,12 @@
 #
 # To test basic crud operations on your active record do the following
-#
+# require 'ares/test/crud'
 # class MyTest < Test::Unit::TestCase
 #   test_crud ClassName, :a_fixture_name, {:an_attr => 'a val for create', ...}
 # end
 #
-module Test
-  module Abstract
+module Ardes
+  module Test
     module Crud
       def self.included(base)
         super
@@ -67,4 +67,4 @@ module Test
   end
 end
 
-Test::Unit::TestCase.class_eval { include Test::Abstract::Crud }
+Test::Unit::TestCase.class_eval { include Ardes::Test::Crud }
