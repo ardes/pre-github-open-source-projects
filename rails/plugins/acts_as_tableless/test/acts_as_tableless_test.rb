@@ -1,5 +1,5 @@
 require File.dirname(__FILE__) + '/test_helper'
-require File.dirname(__FILE__) + '/test_acts_as_tableless'
+require 'ardes/test/acts_as_tableless'
 
 class ActsAsTablelessTest < Test::Unit::TestCase
   class TestObject < ActiveRecord::Base
