@@ -19,13 +19,12 @@ class HasUkPostcodeTest < Test::Unit::TestCase
   end
   
   def test_should_have_data_expected_in_fixtures
-    [:first, :second].each do |fixture|
-      obj = UkPostcodeOwner.find(uk_postcode_owners(fixture)[:id])
-      assert_equal Ardes::UkPostcode.new(uk_postcode_owners(fixture)[:postcode]), obj.postcode
-      unless obj.postcode2.nil? 
-        assert_equal Ardes::UkPostcode.new(uk_postcode_owners(fixture)[:postcode2]), obj.postcode2
-      end
-    end
+    obj = UkPostcodeOwner.find(1)
+    assert_equal Ardes::UkPostcode.new(uk_postcode_owners(:first)[:postcode]), obj.postcode
+    assert_equal nil, obj.postcode2
+    obj = UkPostcodeOwner.find(2)
+    assert_equal Ardes::UkPostcode.new(uk_postcode_owners(:second)[:postcode]), obj.postcode
+    assert_equal Ardes::UkPostcode.new(uk_postcode_owners(:second)[:postcode2]), obj.postcode2
   end
 
   def test_should_be_valid_with_S11_8BH_and_WC1A_1AA
