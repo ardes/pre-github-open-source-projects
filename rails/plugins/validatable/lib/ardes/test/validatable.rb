@@ -2,8 +2,8 @@
 #
 # assumes that there are attribute accessors for the target class
 #
-module Test
-  module Abstract
+module Ardes
+  module Test
     module Validatable
       def self.included(base)
         base.extend ClassMethods
@@ -69,4 +69,4 @@ module Test
   end
 end
 
-Test::Unit::TestCase.class_eval { include Test::Abstract::Validatable }
+Test::Unit::TestCase.class_eval { include Ardes::Test::Validatable }

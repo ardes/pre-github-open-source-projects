@@ -1,14 +1,14 @@
 require File.dirname(__FILE__) + '/test_helper'
-require File.dirname(__FILE__) + '/test_validatable'
+require 'ardes/test/validatable'
 
-require 'validatable'
+require 'ardes/validatable'
 
 class ValidatableTest < Test::Unit::TestCase
   class TestObject
     def method_missing(*args)
       "foo"
     end
-    include Validatable
+    include Ardes::Validatable
     attr_accessor :name, :age
 
     validates_format_of :name, :with => /ian/
