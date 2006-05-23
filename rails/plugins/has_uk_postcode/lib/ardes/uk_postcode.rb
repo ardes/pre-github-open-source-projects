@@ -1,7 +1,7 @@
 require 'ardes/validatable'
 
 module Ardes# :nodoc:
-  class UkPostcode < ::ActiveRecord::Base
+  class UkPostcode
     include Ardes::Validatable
 
     attr_reader :code
