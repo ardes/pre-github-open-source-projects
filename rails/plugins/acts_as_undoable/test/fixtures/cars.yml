@@ -1,0 +1,5 @@
+nissan:
+  id: 1
+  name: "nissan v2"
+  price: 20000
+  version: 2

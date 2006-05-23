@@ -1,0 +1,13 @@
+nissan_wheels:
+  id: 1
+  car_id: 1
+  version: 1
+  name: wheels
+  position: 1
+
+nissan_roof:
+  id: 2
+  car_id: 1
+  version: 1
+  name: roof
+  position: 2 

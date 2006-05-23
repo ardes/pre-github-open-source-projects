@@ -1,0 +1,13 @@
+nissan_wheels_v1:
+  id: 1
+  car_part_id: 1
+  car_id: 1
+  version: 1
+  name: wheels
+
+nissan_roof_v1:
+  id: 2
+  car_part_id: 2
+  car_id: 1
+  version: 1
+  name: roof
