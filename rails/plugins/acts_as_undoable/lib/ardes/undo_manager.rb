@@ -82,6 +82,7 @@ module Ardes
     # execution context.
     # If an error is raised the undoable is abandoned
     def execute(attrs = {})
+      attrs = {:description => attrs} if attrs.is_a? String
       if (@depth += 1) == 1
         @operations.transaction { yield(attrs) }
       else
@@ -120,7 +121,7 @@ module Ardes
         how_many = to
       else
         how_many = :all
-        cond += " AND #{@operations.table_name}.id #{undone ? '>=' : '<='} :to"
+        cond += " AND #{@operations.table_name}.id #{undone ? '<=' : '>='} :to"
         cond_vars[:to] = to
       end
       find_options[:order] = "#{@operations.table_name}.id#{undone ? '' : ' DESC'}"

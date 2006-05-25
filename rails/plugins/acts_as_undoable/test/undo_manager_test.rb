@@ -73,6 +73,13 @@ class UndoManagerTest < Test::Unit::TestCase
     assert_equal 'foo', CarUndoOperation.find(op_id).description
   end
   
+  def test_set_description_by_string_in_execute_params
+    op_id = @car_manager.execute('foo') do
+      Car.create(:name => 'foocar')
+    end
+    assert_equal 'foo', CarUndoOperation.find(op_id).description
+  end
+  
   def test_broken_undoable_should_reset_manager
     CarUndoOperation.destroy_all
     Car.destroy_all

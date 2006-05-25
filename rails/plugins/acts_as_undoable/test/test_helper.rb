@@ -6,7 +6,7 @@ require 'test_help'
 load(File.dirname(__FILE__) + "/schema.rb")
 
 class Test::Unit::TestCase
-  self.use_transactional_fixtures = false
+  self.use_transactional_fixtures = false # we are testing transactional features, so this must be false
   self.use_instantiated_fixtures  = false
   self.fixture_path = File.dirname(__FILE__) + "/fixtures/"
 end
