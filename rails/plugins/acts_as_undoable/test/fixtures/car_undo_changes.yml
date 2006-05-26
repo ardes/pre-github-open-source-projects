@@ -1,4 +1,4 @@
-operation1_change1:
+op1_ch1:
   id: 1
   operation_id: 1
   obj_class_name: CarPart
@@ -7,7 +7,7 @@ operation1_change1:
   down_version: NULL
   up_version: 1
 
-operation1_change2:
+op1_ch2:
   id: 2
   operation_id: 1
   obj_class_name: Car
@@ -16,7 +16,7 @@ operation1_change2:
   down_version: NULL
   up_version: 1
 
-operation2_change1:
+op2_ch1:
   id: 3
   operation_id: 2
   obj_class_name: CarPart
@@ -25,7 +25,7 @@ operation2_change1:
   down_version: NULL
   up_version: 1
   
-operation2_change2:
+op2_ch2:
   id: 4
   operation_id: 2
   obj_class_name: Car
@@ -34,7 +34,7 @@ operation2_change2:
   down_version: 1
   up_version: 2
 
-operation3_change1:
+op3_ch1:
   id: 5
   operation_id: 3
   obj_class_name: CarPart
@@ -43,7 +43,7 @@ operation3_change1:
   down_version: 1
   up_version: NULL
 
-operation3_change2:
+op3_ch2:
   id: 6
   operation_id: 3
   obj_class_name: CarPart
@@ -52,7 +52,7 @@ operation3_change2:
   down_version: 1
   up_version: NULL
 
-operation3_change3:
+op3_ch3:
   id: 7
   operation_id: 3
   obj_class_name: Car

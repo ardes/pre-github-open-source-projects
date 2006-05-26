@@ -95,7 +95,7 @@ module Ardes# :nodoc:
             scope = (args.shift or :application)
             undo_all = (args.shift == :all)
             
-            cattr_accessor :undo_manager, :last_undo_operation_id, :operation_without_undo
+            cattr_accessor :undo_manager, :last_undo_operation, :operation_without_undo
             self.undo_manager = Ardes::UndoManager.register(self, scope)
             
             include ActMethods
@@ -128,7 +128,7 @@ module Ardes# :nodoc:
           def send_undoable(*args)
             undoable_attrs = (args.first.is_a?(Hash) ? args.shift : {})
             result = nil
-            self.last_undo_operation_id = undo_manager.execute(undoable_attrs) {result = self.send(*args)}
+            self.last_undo_operation = undo_manager.execute(undoable_attrs) {result = self.send(*args)}
             result
           end
           
@@ -144,14 +144,14 @@ module Ardes# :nodoc:
           def save_with_undo(*args)
             return save_without_undo(*args) if undo_manager.no_undo
             result = nil
-            self.last_undo_operation_id = undo_manager.execute { result = save_without_undo(*args) }
+            self.last_undo_operation = undo_manager.execute { result = save_without_undo(*args) }
             result
           end
       
           def destroy_with_undo(*args)
             return destroy_without_undo(*args) if undo_manager.no_undo
             result = nil
-            self.last_undo_operation_id = undo_manager.execute { result = destroy_without_undo(*args) }
+            self.last_undo_operation = undo_manager.execute { result = destroy_without_undo(*args) }
             result
           end
 
@@ -160,7 +160,7 @@ module Ardes# :nodoc:
             # reciever's undo_manager to execute the block
             # All nested undoables are coalesced into the top level undoable
             def undoable(attrs = {}, &block)
-              self.last_undo_operation_id = self.undo_manager.execute(attrs, &block)
+              self.last_undo_operation = self.undo_manager.execute(attrs, &block)
             end
             
             # Executes the block with undo disabled.

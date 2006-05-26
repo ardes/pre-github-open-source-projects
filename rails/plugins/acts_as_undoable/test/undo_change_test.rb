@@ -20,22 +20,22 @@ class UndoChangeTest < Test::Unit::TestCase
     assert_equal CarUndoOperation.find(1), CarUndoChange.find(1).operation
   end
 
-  def test_should_give_appropriate_change_desc
-    assert_equal 'create car part: 1', car_undo_changes(:operation1_change1).change_desc
-    assert_equal 'create car: 1', car_undo_changes(:operation1_change2).change_desc
+  def test_should_give_appropriate_ch_desc
+    assert_equal 'create car part: 1', car_undo_changes(:op1_ch1).change_desc
+    assert_equal 'create car: 1', car_undo_changes(:op1_ch2).change_desc
   end
   
   def test_should_perform_redo_then_undo_of_destroy
-    assert car_undo_changes(:operation3_change1).redo
-    assert car_undo_changes(:operation3_change2).redo
-    assert car_undo_changes(:operation3_change3).redo
+    assert car_undo_changes(:op3_ch1).redo
+    assert car_undo_changes(:op3_ch2).redo
+    assert car_undo_changes(:op3_ch3).redo
     assert_raise(ActiveRecord::RecordNotFound) { Car.find(cars(:nissan)[:id]) }
     assert_raise(ActiveRecord::RecordNotFound) { CarPart.find(car_parts(:nissan_wheels)[:id]) }
     assert_raise(ActiveRecord::RecordNotFound) { CarPart.find(car_parts(:nissan_roof)[:id]) }
     
-    assert car_undo_changes(:operation3_change1).undo
-    assert car_undo_changes(:operation3_change2).undo
-    assert car_undo_changes(:operation3_change3).undo
+    assert car_undo_changes(:op3_ch1).undo
+    assert car_undo_changes(:op3_ch2).undo
+    assert car_undo_changes(:op3_ch3).undo
     car = Car.find(cars(:nissan)[:id])
     assert_equal 'nissan v2', car.name
     assert_equal 'wheels', car.car_parts.first.name
@@ -43,27 +43,27 @@ class UndoChangeTest < Test::Unit::TestCase
   end
   
   def test_should_perform_undo_and_redo_of_update_and_create
-    assert car_undo_changes(:operation2_change1).undo
-    assert car_undo_changes(:operation2_change2).undo
+    assert car_undo_changes(:op2_ch1).undo
+    assert car_undo_changes(:op2_ch2).undo
     car = Car.find(cars(:nissan)[:id])
     assert_equal 1, car.version
     assert_equal 1, car.car_parts.find(car_parts(:nissan_wheels)[:id]).version
     assert_raise(ActiveRecord::RecordNotFound) { car.car_parts.find(car_parts(:nissan_roof)[:id]) }
     
-    assert car_undo_changes(:operation1_change1).undo
-    assert car_undo_changes(:operation1_change2).undo
+    assert car_undo_changes(:op1_ch1).undo
+    assert car_undo_changes(:op1_ch2).undo
     assert_raise(ActiveRecord::RecordNotFound) { Car.find(cars(:nissan)[:id]) }
     assert_raise(ActiveRecord::RecordNotFound) { CarPart.find(car_parts(:nissan_wheels)[:id]) }
 
-    assert car_undo_changes(:operation1_change1).redo
-    assert car_undo_changes(:operation1_change2).redo
+    assert car_undo_changes(:op1_ch1).redo
+    assert car_undo_changes(:op1_ch2).redo
     car = Car.find(cars(:nissan)[:id])
     assert_equal 1, car.version
     assert_equal 1, car.car_parts.find(car_parts(:nissan_wheels)[:id]).version
     assert_raise(ActiveRecord::RecordNotFound) { car.car_parts.find(car_parts(:nissan_roof)[:id]) }
 
-    assert car_undo_changes(:operation2_change1).redo
-    assert car_undo_changes(:operation2_change2).redo
+    assert car_undo_changes(:op2_ch1).redo
+    assert car_undo_changes(:op2_ch2).redo
     car = Car.find(cars(:nissan)[:id])
     assert_equal 2, car.version
     assert_equal 1, car.car_parts.find(car_parts(:nissan_wheels)[:id]).version

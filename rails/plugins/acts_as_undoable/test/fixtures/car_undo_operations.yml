@@ -1,16 +1,16 @@
-operation1:
+op1:
   id: 1
   undone: 0
   description: 'create car:1'
   updated_at: '2006-01-01 12:00:00'
   
-operation2:
+op2:
   id: 2
   undone: 0
   description: 'update car:1'
   updated_at: '2006-01-01 12:01:00'
 
-operation3:
+op3:
   id: 3
   undone: 1
   description: 'destroy car:1'

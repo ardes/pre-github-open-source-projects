@@ -17,26 +17,26 @@ class UndoManagerTest < Test::Unit::TestCase
   end
   
   def test_should_have_correct_undoables
-    assert_equal [CarUndoOperation.find(2), CarUndoOperation.find(1)], @car_manager.undoables
+    assert_equal [car_undo_operations(:op2), car_undo_operations(:op1)], @car_manager.undoables
     assert(@car_manager.undo)
-    assert_equal [CarUndoOperation.find(1)], @car_manager.undoables
+    assert_equal [car_undo_operations(:op1)], @car_manager.undoables
     assert(@car_manager.undo(:all))
     assert_equal [], @car_manager.undoables
     assert(@car_manager.redo(:all))
-    assert_equal [CarUndoOperation.find(3), CarUndoOperation.find(2), CarUndoOperation.find(1)], @car_manager.undoables
+    assert_equal [car_undo_operations(:op3), car_undo_operations(:op2), car_undo_operations(:op1)], @car_manager.undoables
   end
   
   def test_should_have_correct_redoables
-    assert_equal [CarUndoOperation.find(3)], @car_manager.redoables
+    assert_equal [car_undo_operations(:op3)], @car_manager.redoables
     assert(@car_manager.redo)
     assert_equal [], @car_manager.redoables    
     assert(@car_manager.undo(:all))
-    assert_equal [CarUndoOperation.find(1), CarUndoOperation.find(2), CarUndoOperation.find(3)], @car_manager.redoables
+    assert_equal [car_undo_operations(:op1), car_undo_operations(:op2), car_undo_operations(:op3)], @car_manager.redoables
   end
   
   def test_nested_undoable
     car_1_id = car_2_id = car_part_1_id = nil
-    op_id = @car_manager.execute do |operation|
+    op = @car_manager.execute do |operation|
       c = Car.new(:name => 'ford')
       c.car_parts << CarPart.new(:name => 'gearstick')
       c.save
@@ -47,7 +47,6 @@ class UndoManagerTest < Test::Unit::TestCase
       end
       operation[:description] = 'two fords and a gearstick'
     end
-    op = CarUndoOperation.find(op_id)
     
     assert_equal 3, op.class.count
     assert_equal 'two fords and a gearstick', op.description
@@ -59,25 +58,25 @@ class UndoManagerTest < Test::Unit::TestCase
   end
   
   def test_set_description_in_execute_params
-    op_id = @car_manager.execute(:description => 'foo') do
+    op = @car_manager.execute(:description => 'foo') do
       Car.create(:name => 'foocar')
     end
-    assert_equal 'foo', CarUndoOperation.find(op_id).description
+    assert_equal 'foo', op.description
   end
   
   def test_set_description_in_block
-    op_id = @car_manager.execute do |operation|
+    op = @car_manager.execute do |operation|
       Car.create(:name => 'foocar')
       operation[:description] = 'foo'
     end
-    assert_equal 'foo', CarUndoOperation.find(op_id).description
+    assert_equal 'foo', op.description
   end
   
   def test_set_description_by_string_in_execute_params
-    op_id = @car_manager.execute('foo') do
+    op = @car_manager.execute('foo') do
       Car.create(:name => 'foocar')
     end
-    assert_equal 'foo', CarUndoOperation.find(op_id).description
+    assert_equal 'foo', op.description
   end
   
   def test_broken_undoable_should_reset_manager
@@ -151,11 +150,11 @@ class UndoManagerTest < Test::Unit::TestCase
   
   def test_acts_as_undoable_all
     id = Foo.create(:name => 'foo1').id
-    assert_equal "create foo: #{id}", @foo_manager.undoables(:first).first.description
+    assert_equal "create foo: #{id}", @foo_manager.undoables(:first).description
     Foo.find(id).update_attributes(:name => 'foo2')                  
-    assert_equal "update foo: #{id}", @foo_manager.undoables(:first).first.description
+    assert_equal "update foo: #{id}", @foo_manager.undoables(:first).description
     Foo.destroy(id)
-    assert_equal "destroy foo: #{id}", @foo_manager.undoables(:first).first.description
+    assert_equal "destroy foo: #{id}", @foo_manager.undoables(:first).description
   end
   
   def test_without_undo_with_acts_as_undoable_all

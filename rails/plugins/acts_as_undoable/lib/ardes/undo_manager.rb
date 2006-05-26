@@ -60,22 +60,23 @@ module Ardes
       reset_execute
     end
 
-    def undo(to = :first)
-      @operations.transaction {find_operations(false, to, :include => :changes).each {|op| op.undo}}
+    # which may be passd :all which undoes all ops, default is to undo last op
+    def undo(all = false)
+      @operations.find(:not_undone, (all ? :last : :first)).undo
     end
 
-    def redo(to = :first)
-      @operations.transaction {find_operations(true, to, :include => :changes).each {|op| op.redo}}
+    def redo(all = false)
+      @operations.find(:undone, (all ? :last : :first)).redo
     end
 
-    # to may be :first, an id, or :all (default)
+    # to may be :first, :all (default), or :to => id
     def undoables(to = :all)
-      find_operations(false, to)
+      @operations.find :not_undone, to
     end
 
-    # to may be :first, an id, or :all (default)
+    # to may be :first, :all (default), or :to => id
     def redoables(to = :all)
-      find_operations(true, to)
+      @operations.find :undone, to
     end
 
     # handles nested calls by collapsing all changes into the top level
@@ -112,22 +113,6 @@ module Ardes
       @before_change_version = Hash.new
       @changes = Array.new
       @no_undo = false
-    end
-    
-    def find_operations(undone, to, find_options = {})
-      cond = "undone = :undone"
-      cond_vars  = {:undone => undone}
-      if to == :first or to == :all
-        how_many = to
-      else
-        how_many = :all
-        cond += " AND #{@operations.table_name}.id #{undone ? '<=' : '>='} :to"
-        cond_vars[:to] = to
-      end
-      find_options[:order] = "#{@operations.table_name}.id#{undone ? '' : ' DESC'}"
-      find_options[:conditions] = [cond, cond_vars]
-      result = @operations.find how_many, find_options
-      result.is_a?(Array) ? result : [result]
     end
 
     def capture_change(record, down_version, up_version)
