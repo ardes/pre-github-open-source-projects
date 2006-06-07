@@ -27,7 +27,7 @@ module Ardes# :nodoc:
       #     opts[:description] = "Car with 4 wheels created"
       #     car.save
       #   end
-      #   # => 1 (the id of the undoable corresponding to the above operations)
+      #   # => CarUndoOperation object
       #   
       #   # change the car            
       #   change_car = @manager.execute(:description => "Lost a wheel and gained a fender") do |opts| 
@@ -37,14 +37,14 @@ module Ardes# :nodoc:
       #     car.name = "Changed Car"
       #     car.save
       #   end 
-      #   # => 2
+      #   # => CarUndoOperation object
       #   
       #   # what can be undone?
       #   @manager.undoables
-      #   # => [2, 1]
+      #   # => [change_car, create_car]
       #   
       #   # get a better idea of that (useful for a select list)
-      #   @manager.descriptions(@manager.undoables)
+      #   @manager.undoables.collect {|op| [op.id], [op.description]}
       #   # => [[2, "Lost a wheel and gained a fender"], [1, "Car with 4 wheels created"]]
       #   
       #   # Check the database before undo.  We should have ChangedCar with Wheels 1,2,4 and a Fender
@@ -93,21 +93,16 @@ module Ardes# :nodoc:
           def acts_as_undoable(*args, &extension)
             options = args.last.is_a?(Hash) ? args.pop : {}
             scope = (args.shift or :application)
-            undo_all = (args.shift == :all)
             
-            cattr_accessor :undo_manager, :last_undo_operation, :operation_without_undo
+            cattr_reader :undo_all            
+            cattr_accessor :undo_manager
             self.undo_manager = Ardes::UndoManager.register(self, scope)
             
             include ActMethods
+            alias_method :save_without_undo, :save
+            alias_method :destroy_without_undo, :destroy
+            self.undo_all = (args.shift == :all)
 
-            if undo_all
-              alias_method_chain :save, :undo
-              alias_method_chain :destroy, :undo
-            else
-              alias_method :save_without_undo, :save
-              alias_method :destory_without_undo, :destroy
-            end
-            
             acts_as_versioned(options, &extension)
           end
         end
@@ -118,7 +113,7 @@ module Ardes# :nodoc:
           end
           
           def undoable(attrs = {}, &block)
-            self.class.undoable(attrs, &block)
+            self.undo_manager.execute(attrs, &block)
           end
 
           # send the named method to the reciever in an undoable context, using the
@@ -128,7 +123,7 @@ module Ardes# :nodoc:
           def send_undoable(*args)
             undoable_attrs = (args.first.is_a?(Hash) ? args.shift : {})
             result = nil
-            self.last_undo_operation = undo_manager.execute(undoable_attrs) {result = self.send(*args)}
+            undo_manager.execute(undoable_attrs) {result = self.send(*args)}
             result
           end
           
@@ -144,14 +139,14 @@ module Ardes# :nodoc:
           def save_with_undo(*args)
             return save_without_undo(*args) if undo_manager.no_undo
             result = nil
-            self.last_undo_operation = undo_manager.execute { result = save_without_undo(*args) }
+            undo_manager.execute { result = save_without_undo(*args) }
             result
           end
       
           def destroy_with_undo(*args)
             return destroy_without_undo(*args) if undo_manager.no_undo
             result = nil
-            self.last_undo_operation = undo_manager.execute { result = destroy_without_undo(*args) }
+            undo_manager.execute { result = destroy_without_undo(*args) }
             result
           end
 
@@ -160,11 +155,11 @@ module Ardes# :nodoc:
             # reciever's undo_manager to execute the block
             # All nested undoables are coalesced into the top level undoable
             def undoable(attrs = {}, &block)
-              self.last_undo_operation = self.undo_manager.execute(attrs, &block)
+              self.undo_manager.execute(attrs, &block)
             end
             
             # Executes the block with undo disabled.
-            # This method is only useful if you have set :undo_all
+            # This method is only useful if you have set :all
             #
             #   Foo.without_undo do
             #     @foo.save
@@ -172,6 +167,17 @@ module Ardes# :nodoc:
             #
             def without_undo(&block)
               undo_manager.without_undo(&block)
+            end
+            
+            # turns unodable operations on or off for all model operations
+            def undo_all=(on)
+              if @@undo_all = on
+                alias_method :save, :save_with_undo
+                alias_method :destroy, :destroy_with_undo
+              else
+                alias_method :save, :save_without_undo
+                alias_method :destroy, :destroy_without_undo
+              end
             end
           end
         end

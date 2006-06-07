@@ -6,7 +6,7 @@ require 'ardes/undo_manager'
 #   2. car 1 updated and car_part 2 added
 #   3. car 1 destroyed (along with dependent parts)
 #   4. UNDO of 3
-# So Car(1) exist with two parts and is version 2 at start of tests.
+# So Car(1) exists with two parts and is version 2 at start of tests.
 class UndoManagerTest < Test::Unit::TestCase
   fixtures  :car_undo_changes, :car_undo_operations, :cars, :car_versions, :car_parts, :car_part_versions,
             :foos, :foo_versions, :foo_undo_operations, :foo_undo_changes

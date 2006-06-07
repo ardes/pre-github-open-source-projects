@@ -76,7 +76,7 @@ class ActsAsUndoableTest < Test::Unit::TestCase
   def test_use_case_foos
     Foo.create(:name => 'foo')
     Foo.find_first.update_attributes(:name => 'MOO')
-    foo_change = Foo.last_undo_operation # remeber this point
+    foo_change = Foo.undo_manager.last_operation # remeber this point
     Foo.create(:name => 'bar')
     foo_destroy_all = Foo.undoable('destroy all foos') { Foo.destroy_all }
     

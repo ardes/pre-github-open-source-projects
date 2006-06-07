@@ -3,7 +3,7 @@ require 'ardes/undo_operation'
 module Ardes
   class UndoManager
     @@managers = {}
-    attr_reader :no_undo
+    attr_reader :no_undo, :last_operation
     
     # manager must be registered before the call to acts_as_versioned, to get
     # callbacks working properly, this is handled in acts_as_undoable.
@@ -60,7 +60,7 @@ module Ardes
       reset_execute
     end
 
-    # which may be passd :all which undoes all ops, default is to undo last op
+    # which may be passd :all which undoes all ops, default is to undo most recent (first undoable) op
     def undo(all = false)
       @operations.find(:not_undone, (all ? :last : :first)).undo
     end
@@ -128,7 +128,7 @@ module Ardes
     def push_changes(attrs = {})
       if @changes.size > 0
         attrs[:description] = @changes.last.change_desc unless attrs[:description]
-        @operations.push(@changes, attrs)
+        @last_operation = @operations.push(@changes, attrs)
       end
     end
   end
