@@ -14,7 +14,7 @@ module Ardes# :nodoc:
             self.class_eval do
               attrs.each do |attr|
                 composed_of attr, :class_name => 'Ardes::UkPostcode', :mapping => [attr, :code], :allow_nil => !config[:required]
-                validates_part attr, :if => attr
+                validates_part attr
                 validates_presence_of attr if config[:required]
               end
             end
