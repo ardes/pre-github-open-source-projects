@@ -41,7 +41,7 @@ module Ardes
           end
         end
               
-        def test_should_validate_XXX_XXX_on_all_postcodes
+        def test_should_not_validate_XXX_XXX_on_all_postcodes
           obj = self.has_uk_postcode_class.new
           self.has_uk_postcode_attrs.each do |attr|
             obj.send(attr.to_s + '=', Ardes::UkPostcode.new('XXX XXX'))
