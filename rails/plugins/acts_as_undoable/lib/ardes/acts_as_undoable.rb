@@ -94,7 +94,6 @@ module Ardes# :nodoc:
             options = args.last.is_a?(Hash) ? args.pop : {}
             scope = (args.shift or :application)
             
-            cattr_reader :undo_all            
             cattr_accessor :undo_manager
             self.undo_manager = Ardes::UndoManager.register(self, scope)
             
@@ -178,6 +177,10 @@ module Ardes# :nodoc:
                 alias_method :save, :save_without_undo
                 alias_method :destroy, :destroy_without_undo
               end
+            end
+            
+            def undo_all
+              @@undo_all
             end
           end
         end

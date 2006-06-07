@@ -73,41 +73,72 @@ class ActsAsUndoableTest < Test::Unit::TestCase
     assert_equal ['Wheel 1', 'Wheel 2', 'Wheel 4', 'Fender'], Car.find_first.car_parts.collect {|p| p.name}
   end
   
+  # we want this test to run first on an empty table
   def test_use_case_foos
-    Foo.create(:name => 'foo')
-    Foo.find_first.update_attributes(:name => 'MOO')
+    FooUndoOperation.destroy_all
+    Foo.without_undo { Foo.destroy_all }
+    Foo.undo_all = true
+    
+    foo1_id = Foo.create(:name => 'foo').id
+    Foo.find(foo1_id).update_attributes(:name => 'MOO')
     foo_change = Foo.undo_manager.last_operation # remeber this point
-    Foo.create(:name => 'bar')
+    foo2_id = Foo.create(:name => 'bar').id
     foo_destroy_all = Foo.undoable('destroy all foos') { Foo.destroy_all }
     
     # check there's no foos, and that there's 4 undoables in the right order
     assert_equal [], Foo.find_all
-    assert_equal ['destroy all foos', 'create foo: 2', 'update foo: 1', 'create foo: 1'], @foo_manager.undoables.collect {|op| op.description}
+    assert_equal ['destroy all foos', "create foo: #{foo2_id}", "update foo: #{foo1_id}", "create foo: #{foo1_id}"],
+                 @foo_manager.undoables.collect {|op| op.description}
     
     # now undo foo_change (undoing all ops in between) and check
     foo_change.undo
     
     assert_equal ['foo'], Foo.find_all.collect {|r| r.name}
-    assert_equal ['create foo: 1'], @foo_manager.undoables.collect {|op| op.description}
-    assert_equal ['update foo: 1', 'create foo: 2', 'destroy all foos'], @foo_manager.redoables.collect {|op| op.description}
+    assert_equal ["create foo: #{foo1_id}"], @foo_manager.undoables.collect {|op| op.description}
+    assert_equal ["update foo: #{foo1_id}", "create foo: #{foo2_id}", "destroy all foos"],
+                 @foo_manager.redoables.collect {|op| op.description}
     
     # redo twice (using different idioms) and check
     Foo.undo_manager.redo
     @foo_manager.redo
     assert_equal ['MOO', 'bar'], Foo.find_all.collect {|r| r.name}
-    assert_equal ['create foo: 2', 'update foo: 1', 'create foo: 1'], @foo_manager.undoables.collect {|op| op.description}
+    assert_equal ["create foo: #{foo2_id}", "update foo: #{foo1_id}", "create foo: #{foo1_id}"],
+                 @foo_manager.undoables.collect {|op| op.description}
     assert_equal ['destroy all foos'], @foo_manager.redoables.collect {|op| op.description}
     
     # make new change (this will destory the currently undone foo_destroy_all operation) and check
-    Foo.create(:name => 'woooo')
+    foo3_id = Foo.create(:name => 'woooo').id
     assert_equal ['MOO', 'bar', 'woooo'], Foo.find_all.collect {|r| r.name}
-    assert_equal ['create foo: 3', 'create foo: 2', 'update foo: 1', 'create foo: 1'], @foo_manager.undoables.collect {|op| op.description}
+    assert_equal ["create foo: #{foo3_id}", "create foo: #{foo2_id}", "update foo: #{foo1_id}", "create foo: #{foo1_id}"],
+                 @foo_manager.undoables.collect {|op| op.description}
     assert_equal [], @foo_manager.redoables.collect {|op| op.description}
     
     # try and undo the stale foo_destroy_all operation, it will raise an error and do nothing the the db
     assert_raise(Ardes::UndoOperation::Stale) { foo_destroy_all.undo }
     assert_equal ['MOO', 'bar', 'woooo'], Foo.find_all.collect {|r| r.name}    
-    assert_equal ['create foo: 3', 'create foo: 2', 'update foo: 1', 'create foo: 1'], @foo_manager.undoables.collect {|op| op.description}
+    assert_equal ["create foo: #{foo3_id}", "create foo: #{foo2_id}", "update foo: #{foo1_id}", "create foo: #{foo1_id}"],
+                 @foo_manager.undoables.collect {|op| op.description}
     assert_equal [], @foo_manager.redoables.collect {|op| op.description}
+  end
+  
+  def test_undo_all_off_and_on_and_off
+    FooUndoOperation.destroy_all
+    
+    Foo.undo_all = false
+    Foo.create(:name => 'foo')
+    assert_equal false, Foo.undo_all
+    assert_equal [], Foo.undo_manager.undoables
+    
+    Foo.undo_all = true
+    new_foo = Foo.create(:name => 'bar')
+    assert_equal true, Foo.undo_all
+    assert_equal ["create foo: #{new_foo.id}"], Foo.undo_manager.undoables.collect {|op| op.description}
+    
+    Foo.undo_all = false
+    Foo.create(:name => 'foo2')
+    assert_equal false, Foo.undo_all
+    assert_equal ["create foo: #{new_foo.id}"], Foo.undo_manager.undoables.collect {|op| op.description}
+    
+    Foo.undo_all = true # set it back to it's default for this class
   end
 end
