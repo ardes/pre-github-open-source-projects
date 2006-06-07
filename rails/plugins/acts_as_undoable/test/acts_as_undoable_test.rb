@@ -1,6 +1,20 @@
 require File.dirname(__FILE__) + '/test_helper'
+require 'ardes/test/acts_as_undoable'
+begin; require 'ardes/test/crud'; rescue MissingSourceFile; end  
 
-class ActsAsUndoableTest < Test::Unit::TestCase
+class ActsAsUndoableCarPartTest < Test::Unit::TestCase
+  fixtures :car_parts, :car_part_versions
+  
+  if defined?(Ardes::Test::Crud)
+    test_crud CarPart, :nissan_wheels, {:name => 'new_part', :position => 999, :car_id => nil}
+  end
+  
+  test_acts_as_undoable CarPart, {:name => 'new_part2', :car_id => 77}
+end
+
+class ActsAsUndoableUseCaseTest < Test::Unit::TestCase
+  fixtures  :car_undo_changes, :car_undo_operations, :cars, :car_versions, :car_parts, :car_part_versions,
+            :foos, :foo_versions, :foo_undo_operations, :foo_undo_changes
   
   def setup
     @car_manager = Ardes::UndoManager.for :car
@@ -75,8 +89,6 @@ class ActsAsUndoableTest < Test::Unit::TestCase
   
   # we want this test to run first on an empty table
   def test_use_case_foos
-    FooUndoOperation.destroy_all
-    Foo.without_undo { Foo.destroy_all }
     Foo.undo_all = true
     
     foo1_id = Foo.create(:name => 'foo').id
@@ -122,8 +134,6 @@ class ActsAsUndoableTest < Test::Unit::TestCase
   end
   
   def test_undo_all_off_and_on_and_off
-    FooUndoOperation.destroy_all
-    
     Foo.undo_all = false
     Foo.create(:name => 'foo')
     assert_equal false, Foo.undo_all

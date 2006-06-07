@@ -98,9 +98,7 @@ module Ardes# :nodoc:
             self.undo_manager = Ardes::UndoManager.register(self, scope)
             
             include ActMethods
-            alias_method :save_without_undo, :save
-            alias_method :destroy_without_undo, :destroy
-            self.undo_all = (args.shift == :all)
+            self.undo_all = !!(args.shift.to_s =~ /^(undo_)?all$/)
 
             acts_as_versioned(options, &extension)
           end
@@ -109,6 +107,8 @@ module Ardes# :nodoc:
         module ActMethods
           def self.included(base)
             base.extend ClassMethods
+            base.send :alias_method, :save_without_undo, :save
+            base.send :alias_method, :destroy_without_undo, :destroy
           end
           
           def undoable(attrs = {}, &block)
@@ -168,9 +168,9 @@ module Ardes# :nodoc:
               undo_manager.without_undo(&block)
             end
             
-            # turns unodable operations on or off for all model operations
+            # turns undoable operations on or off for all model operations
             def undo_all=(on)
-              if @@undo_all = on
+              if @undo_all = on
                 alias_method :save, :save_with_undo
                 alias_method :destroy, :destroy_with_undo
               else
@@ -180,7 +180,7 @@ module Ardes# :nodoc:
             end
             
             def undo_all
-              @@undo_all
+              @undo_all
             end
           end
         end

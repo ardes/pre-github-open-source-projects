@@ -40,38 +40,38 @@ module Ardes
     end
 
     def change_desc
-      (self.up_version.nil? ? "destroy" : (self.down_version.nil? ? "create" : "update")) + " " + self.obj_desc
+      (@attributes['up_version'].nil? ? "destroy" : (@attributes['down_version'].nil? ? "create" : "update")) + " " + self.obj_desc
     end
     
     def obj_desc
-      self.attributes['obj_desc'] || "#{self.obj_class_name.underscore.sub('_',' ')}: #{self.obj_id}"
+      @attributes['obj_desc'] || "#{@attributes['obj_class_name'].underscore.sub('_',' ')}: #{@attributes['obj_id']}"
     end
 
     def undo
-      change_version(self.up_version, self.down_version) or raise "Undo failed"
+      change_version(@attributes['up_version'], @attributes['down_version']) or raise "Undo failed"
     end
   
     def redo
-      change_version(self.down_version, self.up_version) or raise "Redo failed"
+      change_version(@attributes['down_version'], @attributes['up_version']) or raise "Redo failed"
     end
 
   protected
     def change_version(from_version, to_version)
       return true if from_version == to_version
 
-      obj_class = obj_class_name.constantize
+      obj_class = @attributes['obj_class_name'].constantize
 
       obj_class.without_undo do
         if to_version.nil?
           # TODO: should this be delete?
-          obj_class.find(self.obj_id).destroy
+          obj_class.find(@attributes['obj_id']).destroy
         else
-          # There's probably a better way to do this
-          # This way: create a new obj, set it's pk and revert the object
-          # If we're not creating, set @new_record = false to stop INSERT
-          obj = obj_class.new
-          obj.instance_eval "@attributes[self.class.primary_key] = #{self.obj_id}"
-          obj.instance_eval "@new_record = false" unless from_version.nil?
+          if from_version.nil?
+            obj = obj_class.new
+            obj.instance_eval "@attributes[self.class.primary_key] = #{@attributes['obj_id']}"
+          else
+            obj = obj_class.find(@attributes['obj_id'])
+          end
           obj.revert_to!(to_version)
         end
       end
