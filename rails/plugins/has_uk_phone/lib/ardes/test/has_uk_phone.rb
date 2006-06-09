@@ -6,13 +6,20 @@ module Ardes
       end
 
       module ClassMethods
-        # Assumes that there is a valid data in the table
-        def test_has_uk_phone(target_class, *attrs)
+        # Usage: 
+        #   test_has_uk_phone Class, :phone_attr
+        #   test_has_uk_phone Class, :phone_attr, :another_phone_attr
+        #   test_has_uk_phone Class, :phone_attr, ..., [fixture names]
+        #
+        # If fixture names are given then those fixtures will be tested,
+        # if ommitted then all fixtures will be tested
+        def test_has_uk_phone(target_class, *args)
           include InstanceMethods
           self.class_eval do
-            cattr_accessor :has_uk_phone_class, :has_uk_phone_attrs
+            cattr_accessor :has_uk_phone_class, :has_uk_phone_attrs, :has_uk_phone_fixtures
+            self.has_uk_phone_fixtures = args.last.is_a?(Array) ? args.pop : nil
             self.has_uk_phone_class = target_class
-            self.has_uk_phone_attrs = attrs
+            self.has_uk_phone_attrs = args
           end
         end
       end
@@ -25,8 +32,16 @@ module Ardes
           end
         end
         
-        def test_has_uk_phone_should_validate_valid_data
-          self.has_uk_phone_class.find(:all).each do |record|
+        def test_has_uk_phone_should_validate_valid_data_in_fixtures
+          if self.has_uk_phone_fixtures
+            to_test = self.has_uk_phone_fixtures.collect do |fixture|
+              fixture = send(self.has_uk_phone_class.table_name, fixture)
+              self.has_uk_phone_class.find(fixture.id)
+            end
+          else
+            to_test = self.has_uk_phone_class.find(:all)
+          end
+          to_test.each do |record|
             self.has_uk_phone_attrs.each do |attr|
               assert record.valid_for_attributes?(attr)
             end
