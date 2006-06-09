@@ -49,8 +49,9 @@ module Ardes
         end
 
         def test_crud_should_perform_update
-          object = self.crud_class.find_first
-
+          fixture = send(self.crud_class.table_name, self.crud_fixture)
+          object  = self.crud_class.find(fixture.id)
+          
           object.update_attributes(self.crud_attrs)
           object.reload
           self.crud_attrs.each do |attr, value|
@@ -59,8 +60,10 @@ module Ardes
         end
 
         def test_crud_should_perform_destroy
-          obj = self.crud_class.find_first.destroy
-          assert_raise(::ActiveRecord::RecordNotFound) { self.crud_class.find(obj.id) }
+          fixture = send(self.crud_class.table_name, self.crud_fixture)
+          object  = self.crud_class.find(fixture.id)
+          object.destroy
+          assert_raise(::ActiveRecord::RecordNotFound) { self.crud_class.find(object.id) }
         end
       end
     end
