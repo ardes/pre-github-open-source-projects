@@ -29,33 +29,40 @@ module Ardes# :nodoc:
         end
         
         def test_has_handle_should_be_valid_with_handle_containing_only_lowercase_alphanumeric_and_underscores
-          assert new_has_handle_object('h4n_dle').valid?
+          obj = new_has_handle_object('h4n_dle')
+          assert obj.valid_for_attributes?(obj.handle_column)
         end
 
         def test_has_handle_should_be_invalid_with_handle_containing_uppercase
-          assert(!new_has_handle_object('H4n_dle').valid?)
+          obj = new_has_handle_object('H4n_dle')
+          assert(!obj.valid_for_attributes?(obj.handle_column))
         end
 
         def test_has_handle_should_be_invalid_with_handle_containing_space
-          assert(!new_has_handle_object('h4n dle').valid?)
+          obj = new_has_handle_object('h4n dle')
+          assert(!obj.valid_for_attributes?(obj.handle_column))
         end
 
         def test_has_handle_should_be_invalid_with_handle_larger_than_64
-          assert(!new_has_handle_object('0123456789_and_01234567890_and_1234567890_and_1234567890_and_1234567890_and_01234567890').valid?)
+          obj = new_has_handle_object('0123456789_and_01234567890_and_1234567890_and_1234567890_and_1234567890_and_01234567890')
+          assert(!obj.valid_for_attributes?(obj.handle_column))
         end
 
         def test_has_handle_should_be_invalid_with_handle_zero_length_string
-          assert(!new_has_handle_object('').valid?)
+          obj = new_has_handle_object('')
+          assert(!obj.valid_for_attributes?(obj.handle_column))
         end
 
         def test_has_handle_should_be_invalid_if_duplicate
           self.has_handle_id_handle_pairs.each do |id, handle|
-            assert(!new_has_handle_object(handle).valid?)
+            obj = new_has_handle_object(handle)
+            assert(!obj.valid_for_attributes?(obj.handle_column))
           end
         end
 
         def test_has_handle_should_be_invalid_if_nil
-          assert(!new_has_handle_object(nil).valid?)
+          obj = new_has_handle_object(nil)
+          assert(!obj.valid_for_attributes?(obj.handle_column))
         end
 
         def test_has_handle_should_be_findable_with_handle
