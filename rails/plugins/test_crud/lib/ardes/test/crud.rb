@@ -40,10 +40,13 @@ module Ardes
         end
 
         def test_crud_should_perform_create
-          object = self.crud_class.create(self.crud_attrs).reload
+          attrs = {}
+          self.crud_attrs.each {|k, v| attrs[k] = v.is_a?(Proc) ? v.call : v }
+          
+          object = self.crud_class.create(attrs).reload
 
           assert_kind_of self.crud_class, object
-          self.crud_attrs.each do |attr, value|
+          attrs.each do |attr, value|
             assert_equal value, object.send(attr)
           end
         end
@@ -52,9 +55,12 @@ module Ardes
           fixture = send(self.crud_class.table_name, self.crud_fixture)
           object  = self.crud_class.find(fixture.id)
           
-          object.update_attributes(self.crud_attrs)
+          attrs = {}
+          self.crud_attrs.each {|k, v| attrs[k] = v.is_a?(Proc) ? v.call : v }
+          
+          object.update_attributes(attrs)
           object.reload
-          self.crud_attrs.each do |attr, value|
+          attrs.each do |attr, value|
             assert_equal value, object.send(attr)
           end
         end
