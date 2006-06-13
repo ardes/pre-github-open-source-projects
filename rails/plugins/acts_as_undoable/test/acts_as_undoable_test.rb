@@ -9,7 +9,7 @@ class ActsAsUndoableCarPartTest < Test::Unit::TestCase
     test_crud CarPart, :nissan_wheels, {:name => 'new_part', :position => 999, :car_id => nil}
   end
   
-  test_acts_as_undoable CarPart, {:name => 'new_part2', :car_id => 77}
+  test_acts_as_undoable CarPart, :nissan_wheels, {:name => 'new_part2', :car_id => 77}
 end
 
 class ActsAsUndoableUseCaseTest < Test::Unit::TestCase

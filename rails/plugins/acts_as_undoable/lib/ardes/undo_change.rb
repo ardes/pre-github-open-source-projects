@@ -1,5 +1,8 @@
 module Ardes
   module UndoChange
+    
+    class ChangeFailed < RuntimeError; end
+    
     def self.class_for(operation_class)
       class_name = operation_class.name.sub(/Operation$/, 'Change')
       class_name.constantize
@@ -48,11 +51,11 @@ module Ardes
     end
 
     def undo
-      change_version(@attributes['up_version'], @attributes['down_version']) or raise "Undo failed"
+      change_version(@attributes['up_version'], @attributes['down_version']) or raise ChangeFailed, "Change #{obj_desc} from: #{up_version or 'nil'} to: #{down_version or 'nil'} failed" 
     end
   
     def redo
-      change_version(@attributes['down_version'], @attributes['up_version']) or raise "Redo failed"
+      change_version(@attributes['down_version'], @attributes['up_version']) or raise ChangeFailed, "Change #{obj_desc} from: #{down_version or 'nil'} to: #{up_version or 'nil'} failed" 
     end
 
   protected
@@ -63,16 +66,14 @@ module Ardes
 
       obj_class.without_undo do
         if to_version.nil?
-          # TODO: should this be delete?
-          obj_class.find(@attributes['obj_id']).destroy
+          obj_class.delete(@attributes['obj_id'])
         else
-          if from_version.nil?
+          if from_version.nil? or !(obj = obj_class.find(@attributes['obj_id']) rescue nil)
             obj = obj_class.new
             obj.instance_eval "@attributes[self.class.primary_key] = #{@attributes['obj_id']}"
-          else
-            obj = obj_class.find(@attributes['obj_id'])
           end
-          obj.revert_to!(to_version)
+          obj.revert_to(to_version)
+          obj.without_revision { obj.save(false) }
         end
       end
     end

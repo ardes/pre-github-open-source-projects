@@ -21,7 +21,7 @@ module Ardes
       @operations.change_class.create_table(create_table_options)
     end
     
-    def drop_undo_table()
+    def drop_undo_tables()
       @operations.drop_table
       @operations.change_class.drop_table
     end
