@@ -113,14 +113,23 @@ module Ardes
         # default rendering is to render a template named as step (.rhtml or .rjs)
         # override this to provide your own rendering scheme
         def render_step(step = self.current_step)
+          set_view_attributes(step)
           respond_to do |wants|
             wants.html { render :action => step }
             wants.js   { render :action => step }
           end
         end      
 
+        def set_view_attributes(step)
+          # set some variables so the template knows the state of the steps
+          @steps = session[self.session_var_name]
+          @step  = step
+          @next_step = next_step
+        end
+        
         # set the session var if it's not already set
         def initialize_session
+          raise 'boom!'
           session[self.session_var_name] ||= self.steps.inject({}) {|n, i| n.merge({i => nil})}
         end
 
