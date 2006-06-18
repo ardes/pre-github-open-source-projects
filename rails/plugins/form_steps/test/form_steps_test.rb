@@ -1,4 +1,6 @@
 require File.dirname(__FILE__) + '/test_helper'
+require 'ardes/test/form_steps'
+require 'ardes/test/form_steps_order'
 
 class FormStepsTestController < ActionController::Base
   form_steps :first, :second, :third
@@ -53,6 +55,13 @@ end
 
 class FormStepsTest < Test::Unit::TestCase
 
+  test_form_steps
+  
+  test_form_steps_order(
+    {:get => [:index],                              :assigns => {'step' => :first} },
+    {:get => [:process_step, {:step => 'first'}],   :assigns => {'step' => :second}, :expects => 'success(:first)' },
+    {:get => [:process_step, {:step => 'second'}],  :assigns => {'step' => :third}, :expects => Proc.new {|c| c.success(:second)} })
+  
   def setup
     @controller = FormStepsTestController.new
     @request = ActionController::TestRequest.new
@@ -97,7 +106,7 @@ class FormStepsTest < Test::Unit::TestCase
   end
   
   def test_back_to_first
-    @request.session["form_steps_test_form_steps"] = {:first => true, :second => true, :third => nil}
+    @request.session[FormStepsTestController.steps_session_var] = {:first => true, :second => true, :third => nil}
     get :process_step, {:step => 'third', :back_to_first => true}
     assert_response :success
     assert_equal [:process_third, :back_to_first, :display_first], assigns['trace']
@@ -141,7 +150,6 @@ class FormStepsTest < Test::Unit::TestCase
   end
   
   def test_current_step_and_next_step_with_blank_session
-    @request.session["form_steps_test_form_steps"] = nil
     get :blank
     
     assert_equal :first,  @controller.current_step
@@ -153,7 +161,7 @@ class FormStepsTest < Test::Unit::TestCase
   end
     
   def test_current_step_and_next_step_with_session_first_true
-    @request.session["form_steps_test_form_steps"] = {:first => true, :second => false, :third => nil}
+    @request.session[FormStepsTestController.steps_session_var] = {:first => true, :second => false, :third => nil}
     get :blank
     
     assert_equal :second, @controller.current_step
@@ -165,7 +173,7 @@ class FormStepsTest < Test::Unit::TestCase
   end
   
   def test_current_step_and_next_step_with_session_second_true
-    @request.session["form_steps_test_form_steps"] = {:first => true, :second => true, :third => nil}
+    @request.session[FormStepsTestController.steps_session_var] = {:first => true, :second => true, :third => nil}
     get :blank
     
     assert_equal :third, @controller.current_step

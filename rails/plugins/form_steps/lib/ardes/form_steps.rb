@@ -14,6 +14,9 @@ module Ardes
       #   nil   - the step has not been processed
       #   true  - the step has been processed and succeeded
       #   false - the step has been processed and did not succeed
+      # 
+      # you can set these by set_success(:step, val)
+      #
       #
       # in your controller specify these methods for each step
       # protected
@@ -29,17 +32,20 @@ module Ardes
       # 
       #   display_#{step} - called before a step is displayed (optional)
       #
+      #   In both of the above methods, you may render a response.  If none is rendered
+      #   then render_step will render the response
+      #
       def form_steps(*steps)
         options = steps.last.is_a?(Hash) ? steps.pop : {}
         
         include InstanceMethods
         
-        cattr_accessor :steps, :session_var_name, :on_complete_redirect_to
+        cattr_accessor :steps, :steps_session_var, :on_complete_redirect_to
         self.steps                   = steps
-        self.session_var_name        = "#{controller_name}_form_steps"
+        self.steps_session_var       = "#{controller_name}_form_steps".to_sym
         self.on_complete_redirect_to = options[:on_complete_redirect_to]
         
-        before_filter :initialize_session
+        before_filter { |controller| controller.session[self.steps_session_var] ||= {} }
         
         hide_action :success, :current_step, :next_step
       end
@@ -47,7 +53,7 @@ module Ardes
       module InstanceMethods
         # goto named step (or current step) (use this to 'link to' a step)
         def step
-          display_step
+          prepare_and_display_step
         end
         alias_method :index, :step
       
@@ -61,12 +67,12 @@ module Ardes
         
           if success
             if next_step
-              display_step(next_step)
+              prepare_and_display_step(next_step)
             else
               steps_complete
             end
           else
-            render_step
+            display_step
           end
         end
         
@@ -89,7 +95,7 @@ module Ardes
          
         # returns true/false/nil meaning successful/unseccessful/not processed
         def success(step = self.current_step)
-          session[self.session_var_name][step]
+          session[self.steps_session_var][step]
         end
       
       protected
@@ -98,39 +104,37 @@ module Ardes
           if self.on_complete_redirect_to
             respond_to do |wants|
               type.html { redirect_to self.on_complete_redirect_to }
-              type.js   { page.redirect_to self.on_complete_redirect_to }
+              type.js   { render(:update) {|page| page.redirect_to self.on_complete_redirect_to } }
             end
           else
-            render_step(self.steps.last)
+            prepare_and_display_step(self.steps.last)
           end
         end
     
-        def display_step(step = self.current_step)
+        def prepare_and_display_step(step = self.current_step)
           send("display_#{step}") if respond_to?("display_#{step}")
-          render_step(step)
+          display_step(step) unless performed?
         end
 
+        def display_step(step = self.current_step)
+          set_view_attributes(step)
+          render_step(step)
+        end
+        
         # default rendering is to render a template named as step (.rhtml or .rjs)
         # override this to provide your own rendering scheme
         def render_step(step = self.current_step)
-          set_view_attributes(step)
           respond_to do |wants|
             wants.html { render :action => step }
             wants.js   { render :action => step }
           end
-        end      
-
-        def set_view_attributes(step)
-          # set some variables so the template knows the state of the steps
-          @steps = session[self.session_var_name]
-          @step  = step
-          @next_step = next_step
         end
-        
-        # set the session var if it's not already set
-        def initialize_session
-          raise 'boom!'
-          session[self.session_var_name] ||= self.steps.inject({}) {|n, i| n.merge({i => nil})}
+
+        # set some variables so the template knows the state of the steps
+        def set_view_attributes(step)
+          @steps     = session[self.steps_session_var]
+          @step      = step
+          @next_step = next_step
         end
 
       private
@@ -148,10 +152,16 @@ module Ardes
       
         # sets success of a particular step
         def set_success(step, value)
-          session[self.session_var_name][step] = value
+          session[self.steps_session_var][step] = value
+        end
+        
+        # resets success states for all steps to 'untried'
+        def reset_success
+          session[self.steps_session_var] = {}
         end
       
         # sets the current step (only necessay if you're departing from the default step order)
+        # or providing an action that is not called by process_step.
         def current_step=(step)
           @current_step = step
         end
