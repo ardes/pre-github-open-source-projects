@@ -9,12 +9,10 @@ module Ardes
         # Assumes that there is a valid data in the table
         def test_acts_as_undoable(target_class, fixture, attrs)
           include InstanceMethods
-          self.class_eval do
-            cattr_accessor :acts_as_undoable_class, :acts_as_undoable_fixture, :acts_as_undoable_attrs
-            self.acts_as_undoable_class = target_class
-            self.acts_as_undoable_fixture = fixture
-            self.acts_as_undoable_attrs = attrs
-          end
+          cattr_accessor :acts_as_undoable_class, :acts_as_undoable_fixture, :acts_as_undoable_attrs
+          self.acts_as_undoable_class = target_class
+          self.acts_as_undoable_fixture = fixture
+          self.acts_as_undoable_attrs = attrs
         end
       end
 
