@@ -36,16 +36,16 @@ module Ardes
   class Email
     include Ardes::Validatable
   
-    attr_reader :email
+    attr_reader :address
   
-    validates_format_of :email, :with => RFC822::EmailAddress, :message => 'must be a valid email'
+    validates_format_of :address, :with => RFC822::EmailAddress, :message => 'must be a valid email address'
   
-    def initialize(email)
-      @email = email.to_s.strip
+    def initialize(address)
+      @address = address.to_s.strip
     end
 
     def to_s
-      @email.to_s
+      @address.to_s
     end
   
     def ==(other_email)
@@ -53,11 +53,11 @@ module Ardes
     end
   
     def canonical
-      @email.downcase
+      @address.downcase
     end
   
     def empty?
-      @email == ''
+      @address == ''
     end
   end
 end

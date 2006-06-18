@@ -13,8 +13,8 @@ module Ardes# :nodoc:
             attrs = [:email] if attrs.size == 0
             self.class_eval do
               attrs.each do |attr|
-                composed_of attr, :class_name => 'Ardes::Email', :mapping => [attr, :email], :allow_nil => !config[:required]
-                validates_part attr
+                composed_of attr, :class_name => 'Ardes::Email', :mapping => [attr, :address], :allow_nil => !config[:required]
+                validates_part attr, :prepend_attribute => false
                 validates_presence_of attr if config[:required]
               end
             end
