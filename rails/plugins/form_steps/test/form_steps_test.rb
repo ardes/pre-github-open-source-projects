@@ -1,6 +1,5 @@
 require File.dirname(__FILE__) + '/test_helper'
 require 'ardes/test/form_steps'
-require 'ardes/test/form_steps_order'
 
 class FormStepsTestController < ActionController::Base
   form_steps :first, :second, :third
@@ -56,11 +55,6 @@ end
 class FormStepsTest < Test::Unit::TestCase
 
   test_form_steps
-  
-  test_form_steps_order(
-    {:get => [:index],                              :assigns => {'step' => :first} },
-    {:get => [:process_step, {:step => 'first'}],   :assigns => {'step' => :second}, :expects => 'success(:first)' },
-    {:get => [:process_step, {:step => 'second'}],  :assigns => {'step' => :third}, :expects => Proc.new {|c| c.success(:second)} })
   
   def setup
     @controller = FormStepsTestController.new
