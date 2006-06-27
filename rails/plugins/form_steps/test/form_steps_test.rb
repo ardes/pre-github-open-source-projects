@@ -1,3 +1,5 @@
+# dependency: arts plugin (rjs testing)
+
 require File.dirname(__FILE__) + '/test_helper'
 require 'ardes/test/form_steps'
 
@@ -9,6 +11,10 @@ class FormStepsTestController < ActionController::Base
   def blank
     render_nothing
   end
+  
+  def complete
+    render_nothing
+  end
 
 protected
   def display_first
@@ -16,7 +22,7 @@ protected
     @trace << :display_first
   end
   
-  def process_first
+  def first
     @trace ||= Array.new
     @trace << :process_first 
     if params[:skip_second]
@@ -30,12 +36,12 @@ protected
     @trace << :display_second
   end
   
-  def process_second
+  def second
     @trace ||= Array.new
     @trace << :process_second
   end
   
-  def process_third
+  def third
     @trace ||= Array.new
     @trace << :process_third
     if params[:back_to_first]
@@ -62,6 +68,20 @@ class FormStepsTest < Test::Unit::TestCase
     @response = ActionController::TestResponse.new
   end
   
+  def test_on_complete_redirect_to
+    @controller.on_complete_redirect_to = {:action => 'complete'}
+    @request.session[FormStepsTestController.steps_session_var] = {:first => true, :second => true, :third => nil}
+    get :process_step, {:step => 'third'}
+    assert_redirected_to :action => 'complete'
+  end
+  
+  def test_on_complete_redirect_to_rjs
+    @controller.on_complete_redirect_to = {:action => 'complete'}
+    @request.session[FormStepsTestController.steps_session_var] = {:first => true, :second => true, :third => nil}
+    xhr :get, :process_step, {:step => 'third'}
+    assert_rjs :redirect_to, :action => 'complete'
+  end
+    
   def test_all_steps_no_params
     get :index
     assert_response :success

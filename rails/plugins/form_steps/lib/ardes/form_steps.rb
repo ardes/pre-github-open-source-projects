@@ -20,7 +20,7 @@ module Ardes
       #
       # in your controller specify these methods for each step
       # protected
-      #   process_#{step} - called before step is processed (optional)
+      #   #{step} - called before step is processed (optional)
       #     within this method:
       #       self.success = true/false (if not called success is assumed true)
       #       
@@ -59,9 +59,9 @@ module Ardes
       
         # process step (use this to process a step)
         def process_step
-          raise 'step not specified' unless params[:step]
+          raise ::ActionController::UnknownAction unless params[:step] and self.steps.include?(current_step)
           
-          send("process_#{current_step}") if respond_to?("process_#{current_step}")
+          send(current_step) if respond_to?(current_step)
           
           self.success = true if success == nil # we assume success if it's not specified in process
         
@@ -72,7 +72,7 @@ module Ardes
               steps_complete
             end
           else
-            display_step
+            display_step unless performed?
           end
         end
         
@@ -103,8 +103,11 @@ module Ardes
         def steps_complete
           if self.on_complete_redirect_to
             respond_to do |wants|
-              type.html { redirect_to self.on_complete_redirect_to }
-              type.js   { render(:update) {|page| page.redirect_to self.on_complete_redirect_to } }
+              wants.html { redirect_to self.on_complete_redirect_to }
+              wants.js do
+                @redirect_to = self.on_complete_redirect_to
+                render(:update) {|page| page.redirect_to @redirect_to }
+              end
             end
           else
             prepare_and_display_step(self.steps.last)
@@ -112,7 +115,8 @@ module Ardes
         end
     
         def prepare_and_display_step(step = self.current_step)
-          send("display_#{step}") if respond_to?("display_#{step}")
+          raise ::ActionController::UnknownAction unless self.steps.include?(step)
+          send("display_#{step}") if respond_to?("display_#{step}") and self.steps.include?(step)
           display_step(step) unless performed?
         end
 
