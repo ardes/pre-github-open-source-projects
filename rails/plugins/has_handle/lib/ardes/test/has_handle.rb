@@ -113,7 +113,7 @@ module Ardes# :nodoc:
           assert_raise(::ActiveRecord::RecordNotFound) { self.has_handle_class.find(id) }
           assert self.has_handle_class.find(:all).size == self.has_handle_id_handle_pairs.size - 1
           assert self.has_handle_class.find(:first) unless self.has_handle_id_handle_pairs.size == 1
-          assert(!self.has_handle_class.find(:first, :conditions => ["handle = ?", handle]))
+          assert(!self.has_handle_class.find(:first, :conditions => ["#{self.has_handle_class.handle_column} = ?", handle]))
         end
         
         def test_has_handle_should_be_existing_with_handle

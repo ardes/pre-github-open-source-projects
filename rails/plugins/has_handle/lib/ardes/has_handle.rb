@@ -65,7 +65,7 @@ module Ardes# :nodoc:
                 alias_method_chain :find_one, :handle
                 alias_method_chain :find_some, :handle
                 alias_method_chain :instantiate, :handle
-                alias_method_chain :exists?, :handle?
+                alias_method_chain :exists?, :handle
               end
               after_save :cache_handle
             end
