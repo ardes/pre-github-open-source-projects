@@ -43,7 +43,8 @@ module Ardes
         end
       end
   
-      def assert_xtemplate(template, xtemplate)
+      def assert_xtemplate(template, xtemplate = nil)
+        xtemplate = template =~ /\./ ? template.sub('.rhtml', '.rjs') : template + '.rjs' if xtemplate.nil?
         js ? assert_template(xtemplate) : assert_template(template)
       end
       
