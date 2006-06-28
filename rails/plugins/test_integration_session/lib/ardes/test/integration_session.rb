@@ -1,7 +1,21 @@
 module Ardes
   module Test
-    module IntegrationSession
-  
+    module IntegrationTest
+      def self.included(base)
+        class_eval <<-end_eval  
+          def new_session(*args, &block)
+            options = args.last.is_a?(Hash) ? args.pop : {}
+            open_session do |sess|
+              sess.extend(#{base.name}::Session)
+              sess.js = options[:js]
+              yield sess if block_given?
+            end
+          end
+        end_eval
+      end
+    end
+    
+    module IntegrationSession  
       attr_accessor :js
   
       def xget(*args)
