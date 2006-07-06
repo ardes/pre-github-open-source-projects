@@ -24,6 +24,8 @@ private
 end
 
 class ActionView::Helpers::FormBuilder
+  self.field_helpers += ['confirmation_text_field', 'confirmation_password_field']
+  
   def confirmation_text_field(method, options = {})
     @template.send(:confirmation_text_field, @object_name, method, options.merge(:object => @object))
   end
