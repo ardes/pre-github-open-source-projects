@@ -1,7 +1,7 @@
 module Ardes
   module AjaxCrud
     class FormBuilder < ::ActionView::Helpers::FormBuilder
-      field_helpers.each - [:hidden_field] do |selector|
+      field_helpers.each - ['hidden_field'] do |selector|
         src = <<-end_src
           def #{selector}(method, options = {})
             extract_options_and_render_tag(method, options) do |method, options|
