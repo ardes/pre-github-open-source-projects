@@ -13,8 +13,6 @@ class InheritViewsController < ActionController::Base
   def in_all; end
     
   def in_first_and_second; end
-    
-  def in_none; end
 end
 
 class InheritViewsTest < Test::Unit::TestCase
@@ -56,8 +54,94 @@ class InheritViewsTest < Test::Unit::TestCase
   
   def test_view_is_not_there
     get :in_none
-    assert_response :error
+    assert_response :missing
+  end
+  
+  def test_parent_views_for
+    @controller.parent_views_for :first do
+      assert_equal [:second], @controller.inherit_views_from
+    end
+    assert_equal [:first, :second], @controller.inherit_views_from
+  end
+  
+  def test_exclude_views_for
+    @controller.exclude_views_for :second do
+      assert_equal [:first], @controller.inherit_views_from
+    end
+    assert_equal [:first, :second], @controller.inherit_views_from
   end
 end
 
+#
+# Inheritance of views testing
+# 
+
+class Parent < ActionController::Base
+  inherit_views :parent_1, :parent_2
+end
+
+class Child < Parent
+  inherit_views
+end
+
+class GrandChild < Child
+  inherit_views :parent_2, :baby
+end
+
+module FooAct
+  def foo_view
+    inherit_views :foo
+  end
+end
+ActionController::Base.class_eval { extend FooAct }
+
+class FooeyedGrandChild < GrandChild
+  foo_view
+end
+
+class Fooeyed < ActionController::Base
+  foo_view
+end
+
+class FooeyedChild < Fooeyed
+  inherit_views :bar
+end
+
+class IgnoringAncestry < FooeyedGrandChild
+  self.inherit_views_from = [:you_can_go_you_own_way]
+end
+
+class InheritViewsInheritanceTest < Test::Unit::TestCase
   
+  def test_base
+    assert_equal [], ActionController::Base.inherit_views_from
+  end
+  
+  def test_parent
+    assert_equal [:parent_1, :parent_2], Parent.inherit_views_from
+  end
+  
+  def test_child
+    assert_equal [:child, :parent_1, :parent_2], Child.inherit_views_from
+  end
+  
+  def test_grand_child
+    assert_equal [:parent_2, :baby, :child, :parent_1], GrandChild.inherit_views_from
+  end
+  
+  def test_fooeyed
+    assert_equal [:foo], Fooeyed.inherit_views_from
+  end
+  
+  def test_fooeyed_grand_child
+    assert_equal [:foo, :parent_2, :baby, :child, :parent_1], FooeyedGrandChild.inherit_views_from
+  end
+  
+  def test_fooeyed_child
+    assert_equal [:bar, :foo], FooeyedChild.inherit_views_from
+  end
+  
+  def test_ignoring_ancestry
+    assert_equal [:you_can_go_you_own_way], IgnoringAncestry.inherit_views_from
+  end
+end
