@@ -1,0 +1,18 @@
+<ul id="<%= public_id %>_sortable_list" class="list">
+  
+  <%= render :partial => 'list_empty' if list.size == 0 %>
+  
+  <% for item in list %>
+    <li id="item_<%= item.id %>">
+      <div class="item"><%= render :partial => 'item_main', :locals => {:item => item} %></div>
+    </li>
+  <% end %>
+
+</ul>
+
+<% if list.size > 0 %>
+<%= sortable_element "#{public_id}_sortable_list", :url => internal_url({ :action => 'sort' }),
+  :loading  => "Element.show('#{public_id}_loading');",
+  :loaded   => "Element.hide('#{public_id}_loading');",
+  :complete => visual_effect(:highlight, "#{public_id}_sortable_list") %>
+<% end %>

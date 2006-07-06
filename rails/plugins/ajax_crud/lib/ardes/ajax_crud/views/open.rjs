@@ -1,0 +1,1 @@
+rjs_open page, :action => controller.action_name, :id => @new_record ? 'new' : @model.id, :container_id => params[:container_id]

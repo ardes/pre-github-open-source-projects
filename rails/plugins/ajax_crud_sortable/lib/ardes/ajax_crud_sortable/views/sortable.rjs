@@ -1,0 +1,8 @@
+if @sorting
+  page.replace_html "#{public_id}_list", :partial => 'sortable_list', :locals => {:list => @models}
+  page.replace_html "#{public_id}_nav_links", :partial => 'sortable_nav_links'
+  page.replace_html "#{public_id}_new", ''
+else
+  page.replace_html "#{public_id}_list", :partial => 'list', :locals => {:list => @models}
+  page.replace_html "#{public_id}_nav_links", :partial => 'nav_links'
+end

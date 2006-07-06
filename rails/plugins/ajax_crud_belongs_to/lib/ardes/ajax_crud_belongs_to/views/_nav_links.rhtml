@@ -1,0 +1,4 @@
+<%= cancel_action 'Close', :action => 'index' %>
+<% controller.parent_views_for :ajax_crud_belongs_to do %>
+  <%= render :partial => "nav_links" %>
+<% end %>

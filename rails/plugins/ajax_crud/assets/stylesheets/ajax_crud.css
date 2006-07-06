@@ -1,0 +1,245 @@
+/*****************************************************************************
+** Fonts for ajax_crud and headings
+*/
+
+#ajax_crud {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   12px;
+  line-height: 15px;
+  color: #333;
+}
+
+#ajax_crud h1, #ajax_crud h2, #ajax_crud h3 {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size:   15px;
+  line-height: 18px;
+}
+
+#ajax_crud h1 { color: #000; }
+
+#ajax_crud h2 { color: #222; }
+
+
+/*****************************************************************************
+** Nav
+*/
+
+#ajax_crud div.nav {
+  background-color: #EEE;
+  border: 1px solid #999;
+  border-bottom: 0;
+  margin: 0;
+  padding: 7px;
+}
+
+
+/*****************************************************************************
+** Loading
+*/
+
+#ajax_crud div.loading {
+  float: right;
+}
+
+
+/*****************************************************************************
+** Message
+*/
+
+#ajax_crud div.message {
+  float: right;
+  color: green;
+  display: inline;
+}
+
+
+/*****************************************************************************
+** Links, and action links
+*/
+
+#ajax_crud a { color: #000; }
+#ajax_crud a:visited { color: #333; }
+#ajax_crud a:hover { color: #fff; background-color:#000; }
+
+#ajax_crud a.action {
+  margin: 0;
+  padding: 1px 2px 1px 2px;
+  color: #FFF!important;
+  background-color: #997777;
+  text-decoration: none;
+}
+
+#ajax_crud a.action:hover {
+  background-color: #660000;
+}
+
+/*****************************************************************************
+** Forms
+*/
+
+#ajax_crud form {
+  text-align: left;
+  font-size: 11px;
+  margin:0;
+  padding:10px;
+}
+
+#ajax_crud form a.action {
+  font-size: 12px;
+}
+
+#ajax_crud form div.field {
+  text-align: left;
+  margin: 5px 0 0 0;
+  padding: 2px 0 0 0;
+}
+
+#ajax_crud form div.fieldWithErrors {
+  display:inline;
+}
+
+#ajax_crud form div.field label, #ajax_crud form div.label {
+  float: left;
+  text-align: right;
+  width: 110px;
+  margin: 0px 10px 0 0;
+}
+
+#ajax_crud form div.no_label {
+  margin-left: 120px;
+}
+
+#ajax_crud form div.field div.tip {
+  font-size: 10px;
+  color: #555;
+  margin-left: 120px;
+}
+
+#ajax_crud form div.summary {
+  padding: 0;
+  margin-bottom: 0;
+  margin-top: 3px;
+}
+
+#ajax_crud form div.summary div.label {
+  color: #880000;
+}
+
+#ajax_crud form div.summary div.content {
+  margin-left: 120px;
+}
+
+/*****************************************************************************
+** Errors
+*/
+
+#ajax_crud .error {
+  background-color: #FFDDDD;
+  color: #990000;
+}
+
+#ajax_crud form div.error {
+  padding: 5px;
+}
+
+/* TODO: need to turn padding off for "field error" class
+#ajax_crud form div.error+.field {
+  padding: 0;
+}
+*/
+
+#ajax_crud form div.error div.error {
+  font-size: 10px;
+  padding: 0;
+}
+
+#ajax_crud form div.field div.error {
+  margin-left: 120px;
+  padding: 0;
+}
+
+
+/*****************************************************************************
+** Actions and action containers
+*/
+
+#ajax_crud div.action {
+  margin: 0;
+  padding: 5;
+  border-top: 1px solid #999;
+  background-color: #FFFFDD;
+}
+
+#ajax_crud div.actions {
+  clear: both;
+  border-left: 1px solid #999;
+  border-right: 1px solid #999;
+}
+
+
+/*****************************************************************************
+** List
+*/
+
+#ajax_crud div.list {
+  background-color: #EEDDCC;
+}
+
+#ajax_crud div.list ul {
+  margin: 0;
+  background-color: #AAA;
+  padding: .1em;
+  clear: both;
+}
+
+#ajax_crud div.list li {
+  background-color: #EEE;
+  margin:7px;
+  padding:0px;
+  border: 1px solid #999;
+  list-style: none;
+}
+
+#ajax_crud div.list li.list_end {
+  display: none;
+}
+
+
+#ajax_crud div.list li.item div.actions {
+  border: none;
+}
+
+#ajax_crud div.list li {
+  clear:both;
+}
+
+#ajax_crud div.list li.item div.item_main {
+  margin: 0;
+  padding: 2px;
+  float: left;
+}
+
+#ajax_crud div.list li.item div.item_links {
+  margin: 0;
+  padding: 2px;
+  font-size: 10px;
+  float: right;
+}
+
+
+/*****************************************************************************
+** Nested Elements - 1 level deep
+*/
+
+#ajax_crud div.action div.list ul {
+  background-color: #DD9;
+}
+
+#ajax_crud div.action div.list li {
+  background-color: #FFF;
+}
+    
+#ajax_crud div.action div.nav {
+  background-color: #FFD;
+  border: 0;
+}

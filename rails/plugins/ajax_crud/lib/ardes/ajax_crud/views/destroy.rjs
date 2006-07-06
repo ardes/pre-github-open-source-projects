@@ -1,0 +1,2 @@
+rjs_remove_item page, @model
+rjs_message page, @message

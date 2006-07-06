@@ -1,0 +1,5 @@
+<% attributes = @model.attribute_names - ["id"] unless defined?(attributes) and attributes.is_a?(Array) %>
+<%= form.errors_base %>
+<% attributes.each do |attribute| %>
+  <%= form.input attribute %>
+<% end %>

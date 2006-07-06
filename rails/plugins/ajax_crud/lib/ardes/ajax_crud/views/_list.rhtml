@@ -1,0 +1,7 @@
+<div class="list">
+  <ul id="<%= public_id %>_list" class="list">
+    <%= render :partial => 'list_empty' if list.size == 0 %>
+    <%= render :partial => 'item', :collection => list %>
+    <%= render :partial => 'list_end' %>
+  </ul>
+</div>

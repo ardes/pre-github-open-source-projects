@@ -1,0 +1,3 @@
+rjs_close page, :action => controller.action_name, :id => @new_record ? 'new' : @model.id
+rjs_update_item page, @model, @new_record
+rjs_message page, @message

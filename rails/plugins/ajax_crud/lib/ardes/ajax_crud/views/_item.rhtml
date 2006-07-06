@@ -1,0 +1,13 @@
+<li id="<%= public_id(:id => item.id) %>_item" class="item">
+  
+  <div class="item_main" id="<%= public_id(:id => item.id) %>_item_main">
+    <%= render :partial => 'item_main',  :locals => {:item => item } %>
+  </div>
+  
+  <div class="item_links" id="<%= public_id(:id => item.id) %>_item_links">
+    <%= render :partial => 'item_links', :locals => {:item => item } %>
+  </div>
+  
+  <div class="actions" id="<%= public_id(:id => item.id) %>"></div>
+
+</li>

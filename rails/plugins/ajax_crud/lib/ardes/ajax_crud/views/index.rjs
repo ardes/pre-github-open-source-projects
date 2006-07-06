@@ -1,0 +1,1 @@
+rjs_open page, :action => 'index', :container_id => params[:container_id]

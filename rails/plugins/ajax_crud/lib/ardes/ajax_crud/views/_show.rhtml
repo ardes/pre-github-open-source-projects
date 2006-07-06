@@ -1,0 +1,6 @@
+<% form_for_action :action => 'show', :id => @model.id do |form| %>
+  <%= render :partial => 'show_form', :locals => {:form => form} %>
+  <div class="no_label field">
+    <%= cancel_action 'Done', :action => 'show', :id => @model.id %>
+  </div>
+<% end %>

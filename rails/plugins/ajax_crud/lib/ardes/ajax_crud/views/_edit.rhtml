@@ -1,0 +1,7 @@
+<% form_for_action :action => 'edit', :id => @model.id || 'new' do |form| %>
+  <%= render :partial => 'edit_form', :locals => {:form => form} %>
+  <div class="field no_label">
+    <%= submit_tag("Save changes")%>
+    <%= cancel_action 'Cancel', :action => 'edit', :id => @model.id || 'new' %>
+  </div>
+<% end %>

@@ -1,0 +1,4 @@
+<% attributes = @model.attribute_names - ["id"] unless defined?(attributes) and attributes.is_a?(Array) %>
+<% attributes.each do |attribute| %>
+  <%= form.summary attribute %>
+<% end %>
