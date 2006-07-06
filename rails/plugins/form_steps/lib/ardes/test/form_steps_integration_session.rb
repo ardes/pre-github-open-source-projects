@@ -2,16 +2,15 @@ module Ardes
   module Test
     module FormStepsIntegrationSession
       def processes_step(step, params = {})
-        params[:step] = step
         xpost url_for(:controller => controller.controller_name, :action => 'process_step', :step => step), stringify_params(params)
         assert_response :success
-        assert_xtemplate "#{controller.controller_name}/step.rhtml", "#{controller.controller_name}/step.rjs"
+        assert_xtemplate "#{controller.controller_name}/step.rhtml"
       end
   
       def goes_to_step(step, params = {})
         xget url_for(:controller => controller.controller_name, :action => 'step', :step => step), stringify_params(params)
         assert_response :success
-        assert_xtemplate "#{controller.controller_name}/step.rhtml", "#{controller.controller_name}/step.rjs"
+        assert_xtemplate "#{controller.controller_name}/step.rhtml"
       end
   
       def assert_at_step(step, body_contains = nil)
