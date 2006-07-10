@@ -58,17 +58,21 @@ class InheritViewsTest < Test::Unit::TestCase
   end
   
   def test_parent_views_for
-    @controller.parent_views_for :first do
+    output = @controller.parent_views_for :first do
       assert_equal [:second], @controller.inherit_views_from
+      :output
     end
     assert_equal [:first, :second], @controller.inherit_views_from
+    assert_equal :output, output 
   end
   
   def test_exclude_views_for
-    @controller.exclude_views_for :second do
+    output = @controller.exclude_views_for :second do
       assert_equal [:first], @controller.inherit_views_from
+      :output
     end
     assert_equal [:first, :second], @controller.inherit_views_from
+    assert_equal :output, output 
   end
 end
 

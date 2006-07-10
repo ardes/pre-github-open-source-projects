@@ -9,10 +9,7 @@ private
     controller.inherit_views_from.each do |from|
       inherited_template_path = template_path.sub /^.*\//, from.to_s + '/'
       inherited_full_path = "#{@base_path}/#{inherited_template_path}.#{extension}"
-      if File.exist?(inherited_full_path)
-        logger.debug("Found inherted view #{inherited_template_path}")
-        return inherited_full_path
-      end
+      return inherited_full_path if File.exist?(inherited_full_path)
     end
 
     # If it cannot be found in additional paths, return the default path
