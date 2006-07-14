@@ -157,9 +157,8 @@ def exit_with_usage(exit_code = 0)
   exit(exit_code)
 end
 
-alias_method :old_print, :print
-def print(out)
-  old_print out
+def print(s)
+  STDOUT.print s
   STDOUT.flush
 end
 
