@@ -34,50 +34,45 @@ def main
   end
 end
 
-def fprint(out)
-  print out
-  STDOUT.flush
-end
-
 def svn
-  fprint "  svn: "
+  print "  svn: "
   if file_not_there_or_force("#{$SVN_DIR}/#{$PROJECT}")
-    fprint "create svn repository ..."
+    print "create svn repository ..."
     run_sh(:svn)
-    fprint "done.\n"
+    print "done.\n"
   end
 end
 
 def trac
-  fprint "  trac: "
+  print "  trac: "
   if file_not_there_or_force("#{$TRAC_DIR}/#{$PROJECT}")
-    fprint "create trac project ..."
+    print "create trac project ..."
     run_sh(:trac)
-    fprint "done.\n"
+    print "done.\n"
   end
 end
 
 def trac_perms
-  fprint "  trac_perms: setup permissions ..."
+  print "  trac_perms: setup permissions ..."
   run_sh(:trac_perms)
-  fprint "done.\n"
+  print "done.\n"
 end
 
 def trac_ini
-  fprint "  trac_ini: writing default trac.ini ..."
+  print "  trac_ini: writing default trac.ini ..."
   write_file('trac.ini', "#{$TRAC_DIR}/#{$PROJECT}/conf/trac.ini")
-  fprint "done.\n"
+  print "done.\n"
 end
 
 def file_not_there_or_force(file)
   if File.exist? file
     unless $FORCE
-      fprint("#{file} exists - skipping\n")
+      print("#{file} exists - skipping\n")
       return false
     end
-    fprint "#{file} exists - deleting ..."
-    `rm -r -f file`
-    fprint "done, "
+    print "#{file} exists - deleting ...\n"
+    `rm -r -i #{file}`
+    print "done, "
   end
   return true
 end
@@ -160,6 +155,12 @@ def exit_with_usage(exit_code = 0)
   
   end_print
   exit(exit_code)
+end
+
+alias_method :old_print, :print
+def print(out)
+  old_print out
+  STDOUT.flush
 end
 
 main
