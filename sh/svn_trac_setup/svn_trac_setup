@@ -87,7 +87,7 @@ def run_sh(task)
   sh = eval "<<-end_eval
 #{sh}
   end_eval"
-  `sh`
+  `#{sh}`
 end
 
 def write_file(src, dest)
