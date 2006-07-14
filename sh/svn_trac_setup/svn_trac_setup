@@ -66,7 +66,7 @@ end
 
 def file_not_there_or_force(file)
   if File.exist? file
-    unless $FORCE
+    unless false # we're not allowing this at the moment $FORCE
       print("#{file} exists - skipping\n")
       return false
     end
@@ -96,7 +96,6 @@ end
 def command_line_options
   options = [
     ["--help",               "-h",   GetoptLong::NO_ARGUMENT],
-    ["--force",              "-f",   GetoptLong::NO_ARGUMENT],
     ["--svn-dir",                    GetoptLong::REQUIRED_ARGUMENT],
     ["--trac-dir",                   GetoptLong::REQUIRED_ARGUMENT],
     ["--trac-db",                    GetoptLong::REQUIRED_ARGUMENT],
@@ -134,7 +133,6 @@ def exit_with_usage(exit_code = 0)
 
   options:
     --help              -h
-    --force             -f    force deletion of existing svn and/or trac dirs
   
     --svn-only                create svn repository only
     --no-svn                  do not create svn repository
