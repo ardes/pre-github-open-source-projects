@@ -7,7 +7,7 @@ trac-admin /srv/trac/#{$PROJECT} permission remove ray *
 
 trac-admin /srv/trac/#{$PROJECT} permission add developer TRAC_ADMIN
 
-trac-admin /srv/trac/#{$PROJECT} permission add designer
+trac-admin /srv/trac/#{$PROJECT} permission add designer \
   TIMELINE_VIEW SEARCH_VIEW BROWSER_VIEW LOG_VIEW FILE_VIEW CHANGESET_VIEW \
   WIKI_ADMIN MILESTONE_ADMIN ROADMAP_ADMIN TICKET_ADMIN
 
