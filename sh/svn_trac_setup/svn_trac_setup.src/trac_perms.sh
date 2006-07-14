@@ -1,9 +1,9 @@
-trac-admin /srv/trac/#{$PROJECT} permission remove anonymous *
-trac-admin /srv/trac/#{$PROJECT} permission remove developer *
-trac-admin /srv/trac/#{$PROJECT} permission remove designer *
-trac-admin /srv/trac/#{$PROJECT} permission remove client *
-trac-admin /srv/trac/#{$PROJECT} permission remove ian *
-trac-admin /srv/trac/#{$PROJECT} permission remove ray *
+trac-admin /srv/trac/#{$PROJECT} permission remove anonymous '*'
+trac-admin /srv/trac/#{$PROJECT} permission remove developer '*'
+trac-admin /srv/trac/#{$PROJECT} permission remove designer '*'
+trac-admin /srv/trac/#{$PROJECT} permission remove client '*'
+trac-admin /srv/trac/#{$PROJECT} permission remove ian '*'
+trac-admin /srv/trac/#{$PROJECT} permission remove ray '*'
 
 trac-admin /srv/trac/#{$PROJECT} permission add developer TRAC_ADMIN
 
