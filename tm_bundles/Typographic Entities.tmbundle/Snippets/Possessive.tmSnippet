@@ -3,14 +3,14 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>&amp;#8216;${1:text}&amp;#8217;</string>
+	<string>&amp;#8217;</string>
 	<key>name</key>
-	<string>Single Quotes</string>
+	<string>Possessive</string>
 	<key>scope</key>
 	<string>text.html, text.html.strict</string>
 	<key>tabTrigger</key>
-	<string>sq</string>
+	<string>poss</string>
 	<key>uuid</key>
-	<string>28299D4B-2AFF-4BD7-829F-86CF6015A3FF</string>
+	<string>5F00FAF3-C0C5-47BE-ACDA-E4F97ECFD2EB</string>
 </dict>
 </plist>
