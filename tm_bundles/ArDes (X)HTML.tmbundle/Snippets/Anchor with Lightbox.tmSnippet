@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;a href="${1:location}" title="${2:title}"${3: class="${4:class}"} rel="lightbox"&gt;${5:link title}&lt;/a&gt;$0</string>
+	<key>name</key>
+	<string>Anchor with Lightbox</string>
+	<key>scope</key>
+	<string>text.html, text.html.strict</string>
+	<key>tabTrigger</key>
+	<string>lightbox</string>
+	<key>uuid</key>
+	<string>210F2946-F95D-4403-95EC-FA26AE49DAE8</string>
+</dict>
+</plist>

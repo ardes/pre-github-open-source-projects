@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;script language="JavaScript" src="${1:/support/flash}.js" type="text/javascript"&gt;&lt;/script&gt;
+	&lt;script  language="JavaScript" type="text/javascript"&gt;
+	&lt;!-- hide script from non-JS browsers
+	iefixNindexi1f1()
+	// end hide --&gt;
+&lt;/script&gt;
+</string>
+	<key>name</key>
+	<string>Embed Flash</string>
+	<key>scope</key>
+	<string>text.html, text.html.strict</string>
+	<key>tabTrigger</key>
+	<string>embed</string>
+	<key>uuid</key>
+	<string>6487DDD8-86BB-4585-9FBC-A4D23FDF448F</string>
+</dict>
+</plist>

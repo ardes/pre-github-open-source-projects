@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;a href="${1:location}" title="${2:title}"${3: class="${4:class}"}${5: target="_${6:blank/self/parent/top}"}&gt;${7:link title}&lt;/a&gt;$0</string>
+	<key>name</key>
+	<string>Anchor</string>
+	<key>scope</key>
+	<string>text.html, text.html.strict</string>
+	<key>tabTrigger</key>
+	<string>a</string>
+	<key>uuid</key>
+	<string>03E7E4B3-5818-47D6-BF48-B5522E7FB5F7</string>
+</dict>
+</plist>

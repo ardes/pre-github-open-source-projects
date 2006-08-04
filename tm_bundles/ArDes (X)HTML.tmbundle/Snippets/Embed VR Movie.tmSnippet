@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>&lt;div align="center"&gt;
+&lt;script type="text/javascript" language="javascript" src="${1:/support/movie}.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" language="JavaScript"&gt;
+	&lt;!-- 
+	showVR('${2:width}','${3:height}','${4:name}.mov')
+	// end hide --&gt;
+&lt;/script&gt;
+&lt;/div&gt;
+</string>
+	<key>name</key>
+	<string>Embed VR Movie</string>
+	<key>scope</key>
+	<string>text.html, text.html.strict</string>
+	<key>tabTrigger</key>
+	<string>embed</string>
+	<key>uuid</key>
+	<string>8AC7434B-FD04-4B1E-B93B-399CB0FBC540</string>
+</dict>
+</plist>

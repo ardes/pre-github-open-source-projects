@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>Typographic Entities</string>
+	<key>ordering</key>
+	<array>
+		<string>571252D4-B772-4474-B0FD-0BF5455E5F26</string>
+		<string>7517B8EA-D6D1-406D-967E-64E0BDC5C728</string>
+		<string>B1F9A6AC-CDDE-47AF-A29B-31605047ECE8</string>
+		<string>F31F015D-C5F8-47C9-BD55-CC2447D47A64</string>
+		<string>F2850C04-C31A-4323-B606-9B68AA9FC860</string>
+		<string>297F1853-D7FB-48F3-BC00-2B802C944E16</string>
+		<string>0D822035-DF5A-40C3-916C-B7F930122D3D</string>
+		<string>BE4BB3E8-031C-4605-AAE4-4AC1658B54D3</string>
+		<string>28299D4B-2AFF-4BD7-829F-86CF6015A3FF</string>
+		<string>B331EF10-E7A7-41C2-802E-1C6A6B3E3775</string>
+		<string>C409C4A8-5FCC-48CB-A05A-6D2FA37EBE9B</string>
+		<string>FCE44C81-8BEA-4FA8-AC0D-CB8AC64761A0</string>
+	</array>
+	<key>uuid</key>
+	<string>E6CFB4AC-5BC8-44EF-A187-611A2283787C</string>
+</dict>
+</plist>
