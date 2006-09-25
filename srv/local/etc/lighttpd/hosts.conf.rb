@@ -10,7 +10,7 @@
 # You can also set :match (to '=='), or :conf (to a path with no leading '/') if these
 # depart from '=~' and 'conf/lighttpd.conf' respectively.
 #
-# This script sets a 'server-root' var inside each conditional to be equal to the
+# This script sets a 'host-root' var inside each conditional to be equal to the
 # matched path
 #
 

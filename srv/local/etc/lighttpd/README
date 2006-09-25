@@ -20,6 +20,17 @@ ectory layout.  That is:
 but it should be a matter of minutes to configure the script to work with other layouts,
 even with two subdomains.
 
+= A small problem
+
+I encountered a small problem with lighttpd 1.4.11.  It complained when I tried to use
+the 'include_shell' directive (kinda essential).  It said that SHELL was not set.
+This is no problem if you're manually starting lighty, you can export it (if it's not
+already), but I'm using the init.d script.  So I simply had to add
+
+  export SHELL=/bin/sh
+
+near the top of /etc/init.d/lighttpd
+
 = Other things
 
 Also included is:
