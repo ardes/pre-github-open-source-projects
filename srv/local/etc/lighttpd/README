@@ -1,0 +1,31 @@
+= Vhost/subdomain lighty
+
+These config files constitute a small, portable solution to hosting lighty sites on an
+ad-hoc basis, without intefering with a cpanel/plesk hosting setup.  Once set up, you
+need never touch it again.  You just add sites by adding lighttpd.conf and vhost.conf
+files in the vhost (or subdomain) directories.
+
+= How it works
+
+In lighttpd.conf, hosts.conf.rb is called.  This script searches for any lighttpd.conf
+files in any vhost subdirectories, and if found creates a host conditional for them.
+
+hosts.conf.db is easy to configure, and you should be able to use it for just about any
+directory/subdomain setup.  By default the script is setup to work with a Plesk 8 dir-
+ectory layout.  That is:
+
+  /var/www/vhosts/:vhost:
+  /var/www/vhosts/:vhost:/subdomains/:subdomain: 
+
+but it should be a matter of minutes to configure the script to work with other layouts,
+even with two subdomains.
+
+= Other things
+
+Also included is:
+ - a rails.conf include script which can be configured by setting three vars 
+   before including it (see the script for details).
+ - an example vhost.conf and lighttpd.conf file, which would be placed in the
+   conf directory of your vhost or subdomain
+
+Ian White - ian.w.white@ardes.com

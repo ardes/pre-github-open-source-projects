@@ -1,4 +1,12 @@
 #! /usr/bin/ruby
+#
+# Command-line tool to aid in setting up svn and trac repositories
+# 
+# do svn_trac_setup --help for info
+#
+# Look in ../share/svn_trac_setup for template files.
+#
+
 require 'getoptlong'
 
 $COMMAND             = File.basename(__FILE__)
@@ -10,7 +18,7 @@ $SVN_DIR             = '/srv/svn/repos'
 $TRAC_DIR            = '/srv/trac'
 $TRAC_TEMPLATES_DIR  = '/usr/share/trac/templates'
 $TRAC_DB             = 'sqlite:db/trac.db'
-$SRC_DIR             = "#{$PATH}/../share/#{$COMMAND}"
+$SRC_DIR             = File.expand_path("#{$PATH}/../share/#{$COMMAND}")
 
 def main
   begin
