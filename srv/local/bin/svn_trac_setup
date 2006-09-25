@@ -1,0 +1,164 @@
+#! /usr/bin/ruby
+require 'getoptlong'
+
+$COMMAND             = File.basename(__FILE__)
+$PATH                = File.expand_path(File.dirname(__FILE__))
+
+$TASKS               = [:svn, :trac, :trac_ini, :trac_perms]
+
+$SVN_DIR             = '/srv/svn/repos'
+$TRAC_DIR            = '/srv/trac'
+$TRAC_TEMPLATES_DIR  = '/usr/share/trac/templates'
+$TRAC_DB             = 'sqlite:db/trac.db'
+$SRC_DIR             = "#{$PATH}/#{$COMMAND}.src"
+
+def main
+  begin
+    command_line_options.each do |name, arg|
+      eval "$#{name.sub(/^--/, '').gsub('-', '_').upcase} = '#{arg}'"
+    end
+  rescue
+    exit_with_error
+  end
+
+  exit_with_usage if $HELP
+  exit_with_error if ARGV.size < 1
+  
+  $PROJECT         = ARGV.shift
+  $NAME            = ARGV.shift || $PROJECT
+  $DESCRIPTION     = ARGV.shift || $NAME
+  $URL             = ARGV.shift || ''
+
+  todo.each do |task|
+    send task
+  end
+end
+
+def svn
+  print "  svn: "
+  if file_not_there_or_force("#{$SVN_DIR}/#{$PROJECT}")
+    print "create svn repository ..."
+    run_sh(:svn)
+    print "done.\n"
+  end
+end
+
+def trac
+  print "  trac: "
+  if file_not_there_or_force("#{$TRAC_DIR}/#{$PROJECT}")
+    print "create trac project ..."
+    run_sh(:trac)
+    print "done.\n"
+  end
+end
+
+def trac_perms
+  print "  trac_perms: setup permissions ..."
+  run_sh(:trac_perms)
+  print "done.\n"
+end
+
+def trac_ini
+  print "  trac_ini: writing default trac.ini ..."
+  write_file('trac.ini', "#{$TRAC_DIR}/#{$PROJECT}/conf/trac.ini")
+  print "done.\n"
+end
+
+def file_not_there_or_force(file)
+  if File.exist? file
+    unless false # we're not allowing this at the moment $FORCE
+      print("#{file} exists - skipping\n")
+      return false
+    end
+    print "#{file} exists - deleting ...\n"
+    `rm -r -i #{file}`
+    print "done, "
+  end
+  return true
+end
+
+def run_sh(task)
+  sh = File.read "#{$SRC_DIR}/#{task}.sh"
+  sh = eval "<<-end_eval
+#{sh}
+  end_eval"
+  `#{sh}`
+end
+
+def write_file(src, dest)
+  file = File.read "#{$SRC_DIR}/#{src}"
+  file = eval "<<-end_eval
+#{file}
+  end_eval"
+  File.open(dest, 'w') { |f| f << file }
+end
+
+def command_line_options
+  options = [
+    ["--help",               "-h",   GetoptLong::NO_ARGUMENT],
+    ["--svn-dir",                    GetoptLong::REQUIRED_ARGUMENT],
+    ["--trac-dir",                   GetoptLong::REQUIRED_ARGUMENT],
+    ["--trac-db",                    GetoptLong::REQUIRED_ARGUMENT],
+    ["--trac-templates-dir",         GetoptLong::REQUIRED_ARGUMENT],
+    ["--src-dir",                    GetoptLong::REQUIRED_ARGUMENT]
+  ]
+  
+  $TASKS.each do |task|
+    options << ["--#{task.to_s.sub('_','-')}-only", GetoptLong::NO_ARGUMENT]
+    options << ["--no-#{task.to_s.sub('_','-')}", GetoptLong::NO_ARGUMENT]
+  end
+  
+  GetoptLong.new(*options)
+end
+
+def todo
+  todo = []
+  $TASKS.each do |task|
+    return [task] if eval "$#{task.to_s.upcase}_ONLY"
+    todo.push(task) unless eval "$NO_#{task.to_s.upcase}"
+  end
+  todo
+end
+
+def exit_with_error(exit_code = 1)
+  print "Usage: #{$COMMAND} [options] <project> [<name> <description> <url>]\n"
+  print "For help use #{$COMMAND} --help\n"
+  exit(exit_code)
+end
+
+def exit_with_usage(exit_code = 0)
+  print <<-end_print
+  
+  Usage: #{$COMMAND} [options] <project> [<name> <description> <url>]
+
+  options:
+    --help              -h
+  
+    --svn-only                create svn repository only
+    --no-svn                  do not create svn repository
+                          
+    --trac-only               create trac project only
+    --trac-ini-only           write trac.ini file only (project must exist)
+    --trac-perms-only         set trac permissions only (project must exist)
+    --no-trac                 do not create trac project
+    --no-trac-ini             do not write trac.ini file
+    --no-trac-perms           do not set trac permissions
+  
+    --svn-dir DIR             svn parent dir (default #{$SVN_DIR})
+    --trac-dir DIR            trac parent dir (default #{$TRAC_DIR})
+    --trac-db DB              trac db connection (defaulr #{$TRAC_DB})
+    --trac-templates-dir DIR  trac templates dir (default #{$TRAC_TEMPLATES_DIR})
+    
+    --src-dir DIR             sources dir for this cmd (default #{$SRC_DIR})
+  
+  end_print
+  exit(exit_code)
+end
+
+def print(s)
+  STDOUT.print s
+  STDOUT.flush
+end
+
+main
+
