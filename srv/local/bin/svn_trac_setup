@@ -10,7 +10,7 @@ $SVN_DIR             = '/srv/svn/repos'
 $TRAC_DIR            = '/srv/trac'
 $TRAC_TEMPLATES_DIR  = '/usr/share/trac/templates'
 $TRAC_DB             = 'sqlite:db/trac.db'
-$SRC_DIR             = "#{$PATH}/#{$COMMAND}.src"
+$SRC_DIR             = "#{$PATH}/../share/#{$COMMAND}"
 
 def main
   begin
