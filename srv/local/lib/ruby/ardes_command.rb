@@ -23,6 +23,8 @@
 
 require 'getoptlong'
 
+$DEBUG ||= false
+
 def main
   extract_options
   extract_arguments
