@@ -1,0 +1,53 @@
+#! /usr/bin/ruby
+#
+# do setup_rails_host --help for info
+#
+
+require File.dirname(__FILE__) + '/../lib/ruby/ardes_command'
+
+$COMMAND = File.basename(__FILE__)
+$PATH    = File.expand_path(File.dirname(__FILE__))
+$SRC_DIR = File.expand_path("#{$PATH}/../share/#{$COMMAND}")
+
+$TASKS      = [:conf, :rails]
+$ARGUMENTS  = [:username, :sitepath]
+$OPTIONS    = [
+  ["--help",               "-h",   GetoptLong::NO_ARGUMENT],
+  ["--ssl",		           GetoptLong::NO_ARGUMENT],
+  ["--src-dir",                    GetoptLong::REQUIRED_ARGUMENT]
+]
+
+
+def conf
+  print "  conf: setting up conf dir ..."
+  STDOUT.flush
+  run_sh(:conf)
+  print "done.\n"
+end
+
+def rails
+  print "  rails: setting up rails dir ..."
+  STDOUT.flush
+  run_sh(:rails)
+  print "done.\n"
+end
+
+def print_help
+  puts <<-end_puts
+  options:
+    --help              -h    this help
+  
+    --conf-only               create conf dir only
+    --no-conf                 do not create conf dir
+
+    --ssl                     create vhost_ssl.conf file (with conf task)
+     
+    --rails-only              create rails dir only
+    --no-rails                do not create rails dir
+  
+    --src-dir DIR             sources dir for this cmd (default #{$SRC_DIR})
+  end_puts
+end
+
+main
+
