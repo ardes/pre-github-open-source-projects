@@ -78,7 +78,7 @@ def run_sh(task)
   sh = eval "<<-end_eval
 #{sh}
   end_eval"
-  $DEBUG ? puts sh : `#{sh}`
+  $DEBUG ? puts(sh) : `#{sh}`
 end
 
 def write_file(src, dest)
@@ -86,7 +86,7 @@ def write_file(src, dest)
   file = eval "<<-end_eval
 #{file}
   end_eval"
-  $DEBUG ? puts file : File.open(dest, 'w') { |f| f << file }
+  $DEBUG ? puts(file) : File.open(dest, 'w') { |f| f << file }
 end
 
 def command_line_options
