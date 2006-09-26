@@ -31,33 +31,36 @@ $TRAC_TEMPLATES_DIR  = '/usr/share/trac/templates'
 $TRAC_DB             = 'sqlite:db/trac.db'
 
 def svn
-  puts "  svn: "
+  print "  svn: "
   if file_not_there_or_force("#{$SVN_DIR}/#{$PROJECT}")
-    puts "create svn repository ..."
+    print "create svn repository ..."
+    STDOUT.flush
     run_sh(:svn)
-    puts "done.\n"
+    print "done.\n"
   end
 end
 
 def trac
-  puts "  trac: "
+  print "  trac: "
   if file_not_there_or_force("#{$TRAC_DIR}/#{$PROJECT}")
-    puts "create trac project ..."
+    print "create trac project ..."
+    STDOUT.flush
     run_sh(:trac)
-    puts "done.\n"
+    print "done.\n"
   end
 end
 
 def trac_perms
-  puts "  trac_perms: setup permissions ..."
+  print "  trac_perms: setup permissions ..."
+  STDOUT.flush
   run_sh(:trac_perms)
-  puts "done.\n"
+  print "done.\n"
 end
 
 def trac_ini
-  puts "  trac_ini: writing default trac.ini ..."
+  print "  trac_ini: writing default trac.ini ..."
   write_file('trac.ini', "#{$TRAC_DIR}/#{$PROJECT}/conf/trac.ini")
-  puts "done.\n"
+  print "done.\n"
 end
 
 def print_help
