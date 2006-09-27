@@ -37,6 +37,8 @@ def svn
     STDOUT.flush
     run_sh(:svn)
     print "done.\n"
+    print "  Remember to set up an svk mirror on ardes.zapto.org\n"
+    print "  svk mirror http://svn.ardes.com/#{$PROJECT} //mirror/ardes.com/#{$PROJECT}\n\n"
   end
 end
 
