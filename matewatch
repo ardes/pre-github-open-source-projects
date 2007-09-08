@@ -1,0 +1,267 @@
+#! /usr/bin/env ruby
+
+require 'rubygems'
+require 'rbosa'
+require 'getoptlong'
+
+# no need to edit past here
+class Project
+  attr_reader :name, :path
+  
+  def initialize(name, path)
+    @name = name
+    @path = File.expand_path(path)
+    @times = []
+    @start = nil
+  end
+  
+  def start
+    unless @start
+      puts "[X] #{@name} - #{Time.now}" if $MW_VERBOSE
+      @start = Time.now
+    end
+  end
+  
+  def stop
+    if @start
+      puts "[ ] #{@name} - #{Time.now}" if $MW_VERBOSE
+      @times << [@start, Time.now]
+      @start = nil
+    end
+  end
+  
+  def report(from = nil, to = nil)
+    return "\n#{name}\n#{'=' * name.length}\nNo time data for #{name}\n\n" if @times.length == 0
+    
+    out  = ""
+    from ||= @times.first.first
+    to   ||= @times.last.last
+    
+    heading = "#{name} - from: #{from.strftime('%d %b %Y')} while: #{to.strftime('%d %b %Y')}"
+    out = "\n#{heading}\n#{'=' * heading.length}\n"
+
+    idx, total, last_date = 0, 0, nil
+    times = @times.dup
+    times.push([@start, Time.now]) if @start
+    times.each do |start, stop|
+      next if from > start
+      break if from > stop
+      date, time, dur = start.strftime('%d %b %Y'), start.strftime('%H:%M'), (stop-start).to_i
+      out += "\n- #{date}\n\n" unless date == last_date
+      last_date = date
+      out += sprintf(" %3d. #{time} - %2d hours %2d minutes (%d seconds)\n", idx += 1, dur/3600, (dur%3600)/60, dur%60)
+      total += dur
+    end
+    
+    out + sprintf("\nTOTAL: %d days, %d hours %d minutes (%d seconds)\n\n", total/86400, (total%86400)/3600, (total%3600)/60, total%60)
+  end
+end
+
+class TextmateWatcher
+  attr_reader :projects
+  STORE = File.expand_path("~/.matewatch.yml")
+  
+  def initialize
+    @textmate = OSA::app("Textmate")
+    @projects = YAML.load_file(STORE) rescue []
+    @projects_yaml = @projects.to_yaml
+  end
+  
+  def project(name)
+    @projects.find {|p| p.name == name}
+  end
+  
+  def add_project(name, path, pos = nil)
+    raise "#{name} is already beng watched" if project(name)
+    p = Project.new(name, path)
+    pos ? projects.insert(pos, p) : projects.push(p)
+    save
+    p
+  end
+
+  def move_project(name, pos)
+    raise "#{name} is not being watched" unless p = project(name)
+    p = projects.delete(p)
+    projects.insert(pos, p)
+    save
+    p
+  end
+    
+  def remove_project(name)
+    raise "#{name} is not being watched" unless p = project(name)
+    projects.delete(p)
+    save
+    p
+  end
+  
+  def report(from = nil, to = nil, name = nil)
+    if name
+      project(name) or raise "Can't find project: #{name}"
+      project(name).report(from, to)
+    else
+      projects.inject('') {|r, p| r + p.report(from, to)}
+    end
+  end
+  
+  def watch(poll = 1)
+    poll = 1 if poll.to_i < 1
+    i, textmate_gone = 0, false
+    
+    if $MW_VERBOSE
+      puts "Watching: #{@projects.collect{|p| p.name}.join(', ')}"
+      puts "Poll: #{poll} seconds, Save: #{save} seconds"
+    end
+    
+    loop do
+      sleep(poll)
+      
+      begin
+        active = active_now
+        puts "#{Time.now}: Textmate came back" if $MW_VERBOSE && textmate_gone
+        textmate_gone = false
+      rescue RuntimeError
+        puts "#{Time.now}: Textmate went away" if $MW_VERBOSE && !textmate_gone
+        textmate_gone = true
+      end
+      
+      unless textmate_gone
+        if active
+          projects = @projects - [active]
+          active.start
+        else
+          projects = @projects
+        end
+        projects.each {|p| p.stop}
+        save
+      end
+    end
+  end
+
+  def save
+    new_yaml = @projects.to_yaml
+    if @projects_yaml != new_yaml
+      File.open(STORE, 'w+') {|f| f << new_yaml}
+      @projects_yaml = new_yaml
+    end
+  end
+  
+protected
+  # return the active document
+  def active_now
+    if @textmate.documents.first
+      active_path = @textmate.documents.first.path
+      @projects.find {|p| active_path =~ /^#{p.path}/}
+    end
+  end
+end
+
+def exit_str(str)
+  puts str
+  exit
+end
+
+help_str = <<-end_str
+
+  matewatch [COMMAND] [OPTIONS]
+  
+  matewatch start
+    Starts the project watcher
+    
+    --verbose           -v            show output
+    --poll=<n>          -p <n>        poll every (n) seconds
+    
+  matewatch report
+    Show reports
+
+    --verbose           -v            show extended report
+    --project=<name>    -p <name>     show only report for <name>
+    --from=<date>       -f <date>     show from specified date
+    --to=<date>         -t <date>     show to specified date
+
+  matewatch list
+    List projects being watched
+    
+  matewatch add <name> <path> [<position>]
+    Add a project to the watch list
+    
+  matewatch remove <name>
+    Remove a project from the watch list (no undo)
+    
+  matewatch move <name> <position>
+    Move a project up or down the list
+
+end_str
+
+#######
+# main 
+#######
+
+opts = GetoptLong.new(
+  [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+  [ '--verbose', '-v', GetoptLong::NO_ARGUMENT ],
+  [ '--project', '-p', GetoptLong::REQUIRED_ARGUMENT],
+  [ '--from', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  [ '--to', '-t', GetoptLong::REQUIRED_ARGUMENT],
+  [ '--poll', GetoptLong::REQUIRED_ARGUMENT]
+)
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'     then exit_str(help_str)
+  when '--verbose'  then $MW_VERBOSE = true
+  when '--project'  then @project_name = arg
+  when '--from'     then @from = Time.parse(arg)
+  when '--to'       then @to = Time.parse(arg)
+  when '--poll'     then @poll = arg.to_i
+  end
+end
+
+begin
+  @tw = TextmateWatcher.new
+
+  trap("INT") do
+    puts "Saving state" if $MW_VERBOSE
+    @tw.save
+    exit
+  end
+
+  case ARGV.shift
+  when 'start'
+    @tw.watch(@poll || 5)
+    
+  when 'report'
+    puts @tw.report(@from, @to, @project_name)
+    
+  when 'list'
+    printf("\n %-20s  %s\n\n", 'NAME', 'PATH')
+    @tw.projects.each{|p| printf(" %-20s  %s\n", p.name, p.path)}
+    puts
+    
+  when 'add'
+    usage = "Eh? matewatch add <name> <path> [<position>]"
+    @name = ARGV.shift || exit_str(usage)
+    @path = ARGV.shift || exit_str(usage)
+    @pos  = ARGV.first ? ARGV.shift.to_i : nil
+    project = @tw.add_project(@name, @path, @pos)
+    puts "project #{project.name} #{project.path} added"
+  
+  when 'remove'
+    usage = "Eh? matewatch remove <name>"
+    @name = ARGV.shift || exit_str(@name)
+    project = @tw.remove_project(@name)
+    puts "project #{project.name} removed"
+  
+  when 'move'
+    usage = "Eh? matewatch move <name> <position>"
+    @name = ARGV.shift || exit_str(usage)
+    @pos  = (ARGV.first ? ARGV.shift.to_i : nil) || exit_str(usage)
+    project = @tw.move_project(@name, @pos)
+    puts "project #{project.name} moved"
+  
+  else
+    exit_str("Eh? try matewatch --help")
+  end
+
+#rescue
+#  exit_str($!)
+end
