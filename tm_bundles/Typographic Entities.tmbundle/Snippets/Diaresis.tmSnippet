@@ -5,7 +5,7 @@
 	<key>content</key>
 	<string>&amp;#8230;</string>
 	<key>name</key>
-	<string>Diaresis</string>
+	<string>Ellipsis</string>
 	<key>scope</key>
 	<string>text.html, text.html.strict</string>
 	<key>tabTrigger</key>

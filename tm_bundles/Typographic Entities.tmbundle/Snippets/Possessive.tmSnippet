@@ -4,6 +4,8 @@
 <dict>
 	<key>content</key>
 	<string>&amp;#8217;</string>
+	<key>keyEquivalent</key>
+	<string>^'</string>
 	<key>name</key>
 	<string>Possessive</string>
 	<key>scope</key>
